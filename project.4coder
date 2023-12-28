@@ -1,0 +1,73 @@
+version(1);
+project_name = "Real-Time-Rendering";
+
+patterns = {
+	"*.cpp",
+    "*.cc",
+    "*.c",
+	"*.h",
+	"*.sh",
+	"*.4coder",
+	"*.txt",
+    "*.json"
+};
+
+blacklist_patterns =
+{
+	".*",
+};
+
+load_paths = {
+    {
+        { 
+    	    { "./source", .relative = true, .recursive = true },
+    	    { "./extern", .relative = true, .recursive = true },
+    	    { ".", .relative = true, .recursive = false }
+    	}, 
+    	.os = "linux" 
+    },
+    {
+        { 
+    	    { "./source", .relative = true, .recursive = true },
+    	    { "./extern", .relative = true, .recursive = true },
+    	    { ".", .relative = true, .recursive = false }
+    	}, 
+    	.os = "win" 
+    },
+};
+
+command_list = {
+    { .name = "configure",
+        .out = "*configure*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = true,
+        .cmd = {
+            { "cmake --preset=lin-64-debug && cmake --preset=lin-64-release", .os = "linux" },
+            { "cmake --preset=win-64-debug && cmake --preset=win-64-release", .os="win" }
+        },
+    },
+    { .name = "build",
+        .out = "*compile*", .footer_panel = true, .save_dirty_files = true, .cursor_at_end = false,
+        .cmd = {
+            { "cmake --build --preset=lin-64-debug && cmake --build --preset=lin-64-release", .os = "linux" },
+            { "cmake --build --preset=win-64-debug && cmake --build --preset=win-64-release", .os = "win" }
+        },
+    },
+    { .name = "run-debug",
+        .out = "*run*", .footer_panel = true, .save_dirty_files = false, .cursor_at_end = true,
+        .cmd = {         
+            {"pushd build/lin-64-debug/ && realtime-editor && popd", .os = "linux" },
+            {"pushd .\build\win-64-debug\ && realtime-editor && popd", .os = "win" }
+        },
+    },
+    { .name = "run-release",
+        .out = "*run*", .footer_panel = true, .save_dirty_files = false, .cursor_at_end = true,
+        .cmd = {         
+            {"pushd build/lin-64-release/ && realtime-editor && popd", .os = "linux" },
+            {"pushd .\build\win-64-release\ && realtime-editor && popd", .os = "win" }
+        },
+    },
+};
+    
+fkey_command[4] = "configure";
+fkey_command[5] = "build";
+fkey_command[1] = "run-debug";
+fkey_command[2] = "run-release";
