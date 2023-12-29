@@ -24,12 +24,48 @@
 #ifndef REALTIME_UTILITY_H
 #define REALTIME_UTILITY_H
 
+#include <cstdarg>
+#include <filesystem>
+#include <fstream>
+#include <optional>
+#include <string>
+#include <string_view>
+
+#include "realtime.h"
+
 namespace rt {
 
+    /// Checks whether the provided value is a nullptr. If so, the alternative
+    /// is returned.
+    /// @tparam Type The type of the value
+    /// @param value The value to check
+    /// @param alternative The alternative if the value is a nullptr
+    /// @return The value if it is not null, else the alternative
     template<typename Type>
-    Type* value_or(Type* value, Type* alternative) {
+    Type *value_or(Type *value, Type *alternative) {
         return value ? value : alternative;
     }
+
+    /// Reads the file from the specified path
+    /// @param path The path to the file
+    /// @param flags Optional flags for opening the file (std::ios::binary, ..)
+    /// @return The content of the file, std::nullopt if the file does not
+    ///         exist
+    template<typename CharType = char, typename StringType = std::basic_string<CharType>>
+    std::optional<StringType> read_file(const std::filesystem::path &path, std::ifstream::openmode flags = {}) {
+        std::ifstream file(path, flags);
+        if (!file.is_open()) {
+            return std::nullopt;
+        }
+
+        return StringType{ std::istreambuf_iterator<CharType>(file), {} };
+    }
+
+    /// Print out an error message to the console and exit the application
+    /// with the specified error code
+    /// @param code The error code
+    /// @param message The message
+    [[noreturn]] void error(s32 code, std::string_view message);
 
 }// namespace rt
 

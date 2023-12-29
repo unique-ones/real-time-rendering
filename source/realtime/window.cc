@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 #include "window.h"
+#include "utility.h"
 
 #include <type_traits>
 
@@ -43,6 +44,13 @@ namespace rt {
     /// Indicates whether the window should close or not
     bool Window::should_close() const {
         return glfwWindowShouldClose(window);
+    }
+
+    /// Creates a surface for the specified Vulkan instance
+    void Window::create_surface(VkInstance instance, VkSurfaceKHR *surface) const {
+        if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
+            error(64, "[device] Failed to create window surface!");
+        }
     }
 
 }// namespace rt

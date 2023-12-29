@@ -24,8 +24,8 @@
 #ifndef REALTIME_WINDOW_H
 #define REALTIME_WINDOW_H
 
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <vulkan/vulkan.hpp>
 
 #include <string>
 
@@ -62,7 +62,14 @@ namespace rt {
         /// @return A value that indicates whether the window should close
         bool should_close() const;
 
+        /// Creates a surface for the specified Vulkan instance
+        /// @param instance The Vulkan instance
+        /// @param surface The surface
+        void create_surface(VkInstance instance, VkSurfaceKHR *surface) const;
+
     private:
+        friend class Device;
+
         Specification spec;
         GLFWwindow *window;
     };

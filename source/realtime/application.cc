@@ -26,7 +26,10 @@
 namespace rt {
 
     /// Creates a realtime application
-    Application::Application(Specification specification) : window(std::move(specification)) { }
+    Application::Application(Specification specification)
+        : window(std::move(specification)),
+          device(window),
+          pipeline(device, "shaders/simple.vert.spv", "shaders/simple.frag.spv") { }
 
     /// Runs the application
     void Application::run() {

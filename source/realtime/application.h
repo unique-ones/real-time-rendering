@@ -24,6 +24,8 @@
 #ifndef REALTIME_APPLICATION_H
 #define REALTIME_APPLICATION_H
 
+#include "device.h"
+#include "pipeline.h"
 #include "window.h"
 
 namespace rt {
@@ -48,6 +50,8 @@ namespace rt {
 
     private:
         Window window;
+        Device device;
+        Pipeline pipeline;
     };
 }// namespace rt
 
