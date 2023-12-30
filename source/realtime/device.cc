@@ -21,12 +21,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "device.h"
-
+#include <array>
 #include <set>
 #include <unordered_set>
 
-
+#include "device.h"
 #include "utility.h"
 
 namespace rt {

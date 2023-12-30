@@ -31,7 +31,23 @@
 namespace rt {
 
     struct PipelineDescription {
-        PipelineDescription();
+        VkViewport viewport;
+        VkRect2D scissor;
+        VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
+        VkPipelineRasterizationStateCreateInfo rasterization_info;
+        VkPipelineMultisampleStateCreateInfo multisample_info;
+        VkPipelineColorBlendAttachmentState color_blend_attachment;
+        VkPipelineColorBlendStateCreateInfo color_blend_info;
+        VkPipelineDepthStencilStateCreateInfo depth_stencil_info;
+        VkPipelineLayout pipeline_layout;
+        VkRenderPass render_pass;
+        u32 subpass;
+
+        /// Creates a default pipeline description
+        /// @param width The width of the viewport
+        /// @param height The height of the viewport
+        /// @return A pipeline description
+        static PipelineDescription default_description(u32 width, u32 height);
     };
 
     class Pipeline {
@@ -44,7 +60,10 @@ namespace rt {
         Pipeline(Device &device,
                  const std::filesystem::path &vertex,
                  const std::filesystem::path &fragment,
-                 PipelineDescription description = {});
+                 const PipelineDescription &description);
+
+        /// Destroys all pipeline objects
+        ~Pipeline();
 
         /// A pipeline cannot be copied or moved
         Pipeline(const Pipeline &p) = delete;
@@ -59,7 +78,7 @@ namespace rt {
         /// @param description The pipeline description
         void create_pipeline(const std::filesystem::path &vertex,
                              const std::filesystem::path &fragment,
-                             PipelineDescription description);
+                             const PipelineDescription &description);
 
         /// Creates a Vulkan shader module from the specified SPIR-V code
         /// @param code The SPIR-V shader code

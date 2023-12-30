@@ -24,8 +24,12 @@
 #ifndef REALTIME_APPLICATION_H
 #define REALTIME_APPLICATION_H
 
+#include <memory>
+#include <vector>
+
 #include "device.h"
 #include "pipeline.h"
+#include "swapchain.h"
 #include "window.h"
 
 namespace rt {
@@ -39,19 +43,38 @@ namespace rt {
         /// @param specification The application specification
         explicit Application(Specification specification);
 
+        /// Destroys all application objects
+        ~Application();
+
         /// An application cannot be copied or moved
-        Application(const Application &w) = delete;
-        Application &operator=(const Application &w) = delete;
-        Application(Application &&w) = delete;
-        Application &operator=(Application &&w) = delete;
+        Application(const Application &a) = delete;
+        Application &operator=(const Application &a) = delete;
+        Application(Application &&a) = delete;
+        Application &operator=(Application &&a) = delete;
 
         /// Runs the application
         void run();
 
     private:
+        /// Creates the layout of the pipeline
+        void create_pipeline_layout();
+
+        /// Creates the pipeline
+        void create_pipeline();
+
+        /// Creates the command buffers
+        void create_command_buffers();
+
+        /// Draws a frame
+        void draw_frame();
+
         Window window;
         Device device;
-        Pipeline pipeline;
+        Swapchain swapchain;
+
+        std::unique_ptr<Pipeline> pipeline;
+        VkPipelineLayout pipeline_layout;
+        std::vector<VkCommandBuffer> command_buffers;
     };
 }// namespace rt
 

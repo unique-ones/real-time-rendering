@@ -26,7 +26,6 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-
 #include <string>
 
 #include "realtime.h"
@@ -67,8 +66,14 @@ namespace rt {
         /// @param surface The surface
         void create_surface(VkInstance instance, VkSurfaceKHR *surface) const;
 
+        /// Retrieves the extent of the window
+        /// @return The extent of the window
+        VkExtent2D extent() const;
+
     private:
+        /// Our list of friends :)
         friend class Device;
+        friend class Application;
 
         Specification spec;
         GLFWwindow *window;

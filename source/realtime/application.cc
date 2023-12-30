@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 #include "application.h"
+#include "utility.h"
 
 namespace rt {
 
@@ -29,7 +30,17 @@ namespace rt {
     Application::Application(Specification specification)
         : window(std::move(specification)),
           device(window),
-          pipeline(device, "shaders/simple.vert.spv", "shaders/simple.frag.spv") { }
+          swapchain(device, window.extent()),
+          pipeline_layout{} {
+        create_pipeline_layout();
+        create_pipeline();
+        create_command_buffers();
+    }
+
+    Application::~Application() {
+        vkDestroyPipelineLayout(device.logical_device, pipeline_layout, nullptr);
+    }
+
 
     /// Runs the application
     void Application::run() {
@@ -37,5 +48,33 @@ namespace rt {
             glfwPollEvents();
         }
     }
+
+    /// Creates the layout of the pipeline
+    void Application::create_pipeline_layout() {
+        VkPipelineLayoutCreateInfo layout_info{};
+        layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        layout_info.setLayoutCount = 0;
+        layout_info.pSetLayouts = nullptr;
+        layout_info.pushConstantRangeCount = 0;
+        layout_info.pPushConstantRanges = nullptr;
+
+        if (vkCreatePipelineLayout(device.logical_device, &layout_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
+            error(64, "[application] Unable to create pipeline layout!");
+        }
+    }
+
+    /// Creates the pipeline
+    void Application::create_pipeline() {
+        auto desc = PipelineDescription::default_description(swapchain.width(), swapchain.height());
+        desc.render_pass = swapchain.render_pass;
+        desc.pipeline_layout = pipeline_layout;
+        pipeline = std::make_unique<Pipeline>(device, "shaders/simple.vert.spv", "shaders/simple.frag.spv", desc);
+    }
+
+    /// Creates the command buffers
+    void Application::create_command_buffers() { }
+
+    /// Draws a frame
+    void Application::draw_frame() { }
 
 }// namespace rt

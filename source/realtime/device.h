@@ -24,19 +24,17 @@
 #ifndef REALTIME_DEVICE_H
 #define REALTIME_DEVICE_H
 
-#include "window.h"
-
-#include <array>
 #include <optional>
-#include <string>
 #include <vector>
+
+#include "window.h"
 
 namespace rt {
 
 #ifdef NDEBUG
-    constexpr auto DeviceValidation = false;
+    constexpr static inline auto DeviceValidation = false;
 #else
-    constexpr auto DeviceValidation = true;
+    constexpr static inline auto DeviceValidation = true;
 #endif
 
     struct SwapChainDetails {
@@ -51,7 +49,7 @@ namespace rt {
 
         /// Checks whether the queue family indices are complete
         /// @return A boolean value that indicates completeness
-        inline bool complete() const;
+        bool complete() const;
     };
 
     class Device {
@@ -168,6 +166,8 @@ namespace rt {
 
         /// List of friends :)
         friend class Pipeline;
+        friend class Swapchain;
+        friend class Application;
 
         Window &window;
         VkInstance instance;

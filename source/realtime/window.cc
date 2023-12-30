@@ -53,4 +53,9 @@ namespace rt {
         }
     }
 
+    /// Retrieves the extent of the window
+    VkExtent2D Window::extent() const {
+        return { static_cast<u32>(spec.width), static_cast<u32>(spec.height) };
+    }
+
 }// namespace rt
