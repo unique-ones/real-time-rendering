@@ -71,6 +71,10 @@ namespace rt {
         Pipeline(Pipeline &&p) = delete;
         Pipeline &operator=(Pipeline &&p) = delete;
 
+        /// Bind the pipeline for the specified command buffer
+        /// @param command_buffer The recording command buffer
+        void bind(VkCommandBuffer command_buffer) const;
+
     private:
         /// Creates or recreates a new Vulkan pipeline instance from the specified vertex and fragment shaders
         /// @param vertex The filesystem path to the SPIRV vertex shader

@@ -128,6 +128,11 @@ namespace rt {
         vkDestroyPipeline(device.logical_device, graphics_pipeline, nullptr);
     }
 
+    /// Bind the pipeline for the specified command buffer
+    void Pipeline::bind(VkCommandBuffer command_buffer) const {
+        vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
+    }
+
     /// Creates or recreates a new Vulkan pipeline instance from the specified vertex and fragment shaders
     void Pipeline::create_pipeline(const std::filesystem::path &vertex,
                                    const std::filesystem::path &fragment,

@@ -46,10 +46,6 @@ else ()
     target_compile_options(realtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif ()
 
-# Declare executable
-add_executable(realtime-editor main.cc)
-target_link_libraries(realtime-editor PUBLIC realtime)
-
 # Find all vertex and fragment sources within shaders directory
 find_program(GLSL_VALIDATOR glslangValidator HINTS
         ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
@@ -81,3 +77,8 @@ add_custom_target(
         realtime-shaders
         DEPENDS ${SPIRV_BINARY_FILES}
 )
+
+# Declare executable
+add_executable(realtime-editor main.cc)
+target_link_libraries(realtime-editor PUBLIC realtime)
+add_dependencies(realtime-editor realtime-shaders)
