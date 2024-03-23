@@ -46,7 +46,7 @@ if (MSVC)
     target_compile_definitions(realtime PUBLIC _CRT_SECURE_NO_WARNINGS=1)
     target_compile_options(realtime PRIVATE /W4 /WX)
 else ()
-    target_compile_options(realtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(realtime PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-packed-bitfield-compat)
 endif ()
 
 # Find all vertex and fragment sources within shaders directory

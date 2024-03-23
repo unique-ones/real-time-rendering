@@ -43,4 +43,8 @@ using s64 = int64_t;
 using f32 = float;
 using f64 = double;
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4324)
+#endif
+
 #endif// REALTIME_H

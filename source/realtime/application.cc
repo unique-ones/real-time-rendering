@@ -23,10 +23,20 @@
 
 #include <array>
 
+/// Force angles to be specified in radians
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
 #include "application.h"
 #include "utility.h"
 
 namespace rt {
+
+struct PushConstantData {
+    glm::vec2 offset;
+    alignas(16) glm::vec3 color;
+};
 
 /// Creates a realtime application
 Application::Application(Specification specification)
@@ -69,12 +79,17 @@ void Application::load_models() {
 
 /// Creates the layout of the pipeline
 void Application::create_pipeline_layout() {
+    VkPushConstantRange range{};
+    range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    range.offset = 0;
+    range.size = sizeof(PushConstantData);
+
     VkPipelineLayoutCreateInfo layout_info{};
     layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     layout_info.setLayoutCount = 0;
     layout_info.pSetLayouts = nullptr;
-    layout_info.pushConstantRangeCount = 0;
-    layout_info.pPushConstantRanges = nullptr;
+    layout_info.pushConstantRangeCount = 1;
+    layout_info.pPushConstantRanges = &range;
 
     if (vkCreatePipelineLayout(device.logical_device, &layout_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
         error(64, "[application] Unable to create pipeline layout!");
@@ -183,7 +198,7 @@ void Application::record_command_buffer(u32 image_index) {
     render_pass_info.renderArea.extent = swapchain->swapchain_extent;
 
     std::array<VkClearValue, 2> clear_values{};
-    clear_values[0].color = { 0.1f, 0.1f, 0.1f, 1.0f };
+    clear_values[0].color = { 0.01f, 0.01f, 0.01f, 1.0f };
     clear_values[1].depthStencil = { 1.0f, 0 };
     render_pass_info.clearValueCount = static_cast<u32>(clear_values.size());
     render_pass_info.pClearValues = clear_values.data();
@@ -204,7 +219,20 @@ void Application::record_command_buffer(u32 image_index) {
 
     pipeline->bind(command_buffers[image_index]);
     model->bind(command_buffers[image_index]);
-    model->draw(command_buffers[image_index]);
+
+    static u16 frame = 0;
+    frame = (frame + 1) % 1000;
+
+    for (u32 i = 0; i < 4; ++i) {
+        PushConstantData push{};
+
+        auto weight = static_cast<f32>(i);
+        push.offset = { -0.5f + frame * 0.002f, -0.4f + 0.25f * weight };
+        push.color = { 0.0f, 0.0f, 0.2f + 0.2f * weight };
+        vkCmdPushConstants(command_buffers[image_index], pipeline_layout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof push, &push);
+        model->draw(command_buffers[image_index]);
+    }
 
     vkCmdEndRenderPass(command_buffers[image_index]);
     if (vkEndCommandBuffer(command_buffers[image_index]) != VK_SUCCESS) {
