@@ -25,6 +25,9 @@
 file(GLOB REALTIME_SOURCES
         ${CMAKE_CURRENT_LIST_DIR}/realtime/*.cc)
 
+file(GLOB REALTIME_HEADERS
+        ${CMAKE_CURRENT_LIST_DIR}/realtime/*.h)
+
 # Try and find the Vulkan SDK
 find_package(Vulkan REQUIRED)
 
@@ -34,7 +37,7 @@ FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw.git)
 FetchContent_MakeAvailable(glfw)
 
 # Declare realtime library
-add_library(realtime ${REALTIME_SOURCES})
+add_library(realtime ${REALTIME_SOURCES} ${REALTIME_HEADERS})
 target_include_directories(realtime PUBLIC ${CMAKE_SOURCE_DIR}/extern/ ${CMAKE_CURRENT_SOURCE_DIR}/ ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(realtime PUBLIC ${Vulkan_LIBRARIES} glfw)
 

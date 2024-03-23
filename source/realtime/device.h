@@ -37,7 +37,7 @@ constexpr static inline auto DeviceValidation = false;
 constexpr static inline auto DeviceValidation = true;
 #endif
 
-struct SwapChainDetails {
+struct SwapchainDetails {
     VkSurfaceCapabilitiesKHR capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> present_modes;
@@ -69,7 +69,7 @@ public:
 
     /// Checks for swapchain support of the current device
     /// @return Swapchain support details
-    SwapChainDetails swapchain_support() const;
+    SwapchainDetails swapchain_support() const;
 
     /// Checks if the current device has the specified type of memory
     /// @param filter The filter
@@ -162,7 +162,7 @@ private:
     /// Checks for swapchain support of the specified device
     /// @param device The physical device
     /// @return The swapchain support details
-    SwapChainDetails swapchain_support(VkPhysicalDevice device) const;
+    SwapchainDetails swapchain_support(VkPhysicalDevice device) const;
 
     /// List of friends :)
     friend class Pipeline;

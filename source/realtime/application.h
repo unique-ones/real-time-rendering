@@ -69,13 +69,21 @@ private:
     /// Creates the command buffers
     void create_command_buffers();
 
+    /// Destroys the command buffers
+    void destroy_command_buffers();
+
     /// Draws a frame
     void draw_frame();
 
+    /// Recreates the swapchain
+    void recreate_swapchain();
+
+    /// Records the command buffer using the specified image index
+    void record_command_buffer(u32 image_index);
+
     Window window;
     Device device;
-    Swapchain swapchain;
-
+    std::unique_ptr<Swapchain> swapchain;
     std::unique_ptr<Pipeline> pipeline;
     VkPipelineLayout pipeline_layout;
     std::vector<VkCommandBuffer> command_buffers;

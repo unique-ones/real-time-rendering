@@ -68,12 +68,21 @@ Swapchain::Swapchain(Device &device, VkExtent2D window_extent)
       swapchain_extent{},
       render_pass{},
       current_frame{} {
-    create_swapchain();
-    create_image_views();
-    create_render_pass();
-    create_depth_resources();
-    create_framebuffers();
-    create_sync_objects();
+    init();
+}
+
+/// Creates a new swapchain by reusing resources of a previous swapchain
+Swapchain::Swapchain(Device &device, VkExtent2D window_extent, std::shared_ptr<Swapchain> previous)
+    : device{ device },
+      window_extent{ window_extent },
+      swapchain{},
+      previous{ previous },
+      swapchain_image_format{},
+      swapchain_extent{},
+      render_pass{},
+      current_frame{} {
+    init();
+    previous.reset();
 }
 
 /// Destroys all swapchain objects
@@ -187,6 +196,16 @@ u32 Swapchain::height() const {
     return swapchain_extent.height;
 }
 
+/// Initializes the swapchain
+void Swapchain::init() {
+    create_swapchain();
+    create_image_views();
+    create_render_pass();
+    create_depth_resources();
+    create_framebuffers();
+    create_sync_objects();
+}
+
 /// Creates the internal Vulkan swapchain
 void Swapchain::create_swapchain() {
     auto [capabilities, formats, present_modes] = device.swapchain_support();
@@ -224,9 +243,10 @@ void Swapchain::create_swapchain() {
     create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     create_info.presentMode = present_mode;
     create_info.clipped = VK_TRUE;
-    create_info.oldSwapchain = VK_NULL_HANDLE;
+    create_info.oldSwapchain = previous ? previous->swapchain : VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(device.logical_device, &create_info, nullptr, &swapchain) != VK_SUCCESS) {
+    if (auto result = vkCreateSwapchainKHR(device.logical_device, &create_info, nullptr, &swapchain);
+        result != VK_SUCCESS) {
         error(64, "[swapchain] Failed to create swapchain!");
     }
 

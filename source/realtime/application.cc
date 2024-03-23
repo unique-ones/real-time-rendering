@@ -32,18 +32,17 @@ namespace rt {
 Application::Application(Specification specification)
     : window(std::move(specification)),
       device(window),
-      swapchain(device, window.extent()),
       pipeline_layout{} {
     load_models();
     create_pipeline_layout();
-    create_pipeline();
+    recreate_swapchain();
     create_command_buffers();
 }
 
+/// Destroys all application objects
 Application::~Application() {
     vkDestroyPipelineLayout(device.logical_device, pipeline_layout, nullptr);
 }
-
 
 /// Runs the application
 void Application::run() {
@@ -84,15 +83,19 @@ void Application::create_pipeline_layout() {
 
 /// Creates the pipeline
 void Application::create_pipeline() {
-    auto desc = PipelineDescription::default_description(swapchain.width(), swapchain.height());
-    desc.render_pass = swapchain.render_pass;
+    assert(swapchain && "[application] Cannot create pipeline before swapchain!");
+    assert(pipeline_layout && "[application] Cannot create pipeline before pipeline layout!");
+
+    PipelineDescription desc{};
+    PipelineDescription::default_description(desc);
+    desc.render_pass = swapchain->render_pass;
     desc.pipeline_layout = pipeline_layout;
     pipeline = std::make_unique<Pipeline>(device, "shaders/simple.vert.spv", "shaders/simple.frag.spv", desc);
 }
 
 /// Creates the command buffers
 void Application::create_command_buffers() {
-    command_buffers.resize(swapchain.image_count());
+    command_buffers.resize(swapchain->image_count());
 
     VkCommandBufferAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -103,50 +106,111 @@ void Application::create_command_buffers() {
     if (vkAllocateCommandBuffers(device.logical_device, &alloc_info, command_buffers.data()) != VK_SUCCESS) {
         error(64, "[application] Failed to allocate command buffers!");
     }
+}
 
-    for (s32 i = 0; i < command_buffers.size(); ++i) {
-        VkCommandBufferBeginInfo begin_info{};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        if (vkBeginCommandBuffer(command_buffers[i], &begin_info) != VK_SUCCESS) {
-            error(64, "[application] Failed to begin recording command buffer!");
-        }
-
-        VkRenderPassBeginInfo render_pass_info{};
-        render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        render_pass_info.renderPass = swapchain.render_pass;
-        render_pass_info.framebuffer = swapchain.framebuffer_at(i);
-        render_pass_info.renderArea.offset = { 0, 0 };
-        render_pass_info.renderArea.extent = swapchain.swapchain_extent;
-
-        std::array<VkClearValue, 2> clear_values{};
-        clear_values[0].color = { 0.1f, 0.1f, 0.1f, 1.0f };
-        clear_values[1].depthStencil = { 1.0f, 0 };
-        render_pass_info.clearValueCount = static_cast<u32>(clear_values.size());
-        render_pass_info.pClearValues = clear_values.data();
-
-        vkCmdBeginRenderPass(command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-
-        pipeline->bind(command_buffers[i]);
-        model->bind(command_buffers[i]);
-        model->draw(command_buffers[i]);
-
-        vkCmdEndRenderPass(command_buffers[i]);
-        if (vkEndCommandBuffer(command_buffers[i]) != VK_SUCCESS) {
-            error(64, "[application] Failed to record command buffer!");
-        }
-    }
+/// Destroys the command buffers
+void Application::destroy_command_buffers() {
+    auto size = static_cast<u32>(command_buffers.size());
+    vkFreeCommandBuffers(device.logical_device, device.command_pool, size, command_buffers.data());
+    command_buffers = {};
 }
 
 /// Draws a frame
 void Application::draw_frame() {
     u32 image_index;
-    if (auto result = swapchain.acquire_next_image(&image_index); result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+
+    auto result = swapchain->acquire_next_image(&image_index);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        recreate_swapchain();
+        return;
+    }
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         error(64, "[application] Failed to acquire swap chain image!");
     }
 
-    if (swapchain.submit_command_buffers(&command_buffers[image_index], &image_index) != VK_SUCCESS) {
+    record_command_buffer(image_index);
+    auto submit_result = swapchain->submit_command_buffers(&command_buffers[image_index], &image_index);
+    if (submit_result == VK_ERROR_OUT_OF_DATE_KHR || submit_result == VK_SUBOPTIMAL_KHR || window.is_window_resized()) {
+        window.clear_window_resized();
+        recreate_swapchain();
+        return;
+    }
+
+    if (submit_result != VK_SUCCESS) {
         error(64, "[application] Failed to submit command buffers for drawing!");
     }
 }
+
+/// Recreates the swapchain
+void Application::recreate_swapchain() {
+    auto extent = window.extent();
+
+    // Pause while the window has one dimension that is sizeless (can occur during minimization)
+    while (extent.width == 0 || extent.height == 0) {
+        extent = window.extent();
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(device.logical_device);
+
+    if (!swapchain) {
+        swapchain = std::make_unique<Swapchain>(device, extent);
+    } else {
+        swapchain = std::make_unique<Swapchain>(device, extent, std::move(swapchain));
+        if (swapchain->image_count() != command_buffers.size()) {
+            destroy_command_buffers();
+            create_command_buffers();
+        }
+    }
+
+    // TODO(elias): Do not create a new pipeline if the render pass is compatible
+    create_pipeline();
+}
+
+/// Records the command buffer using the specified image index
+void Application::record_command_buffer(u32 image_index) {
+    VkCommandBufferBeginInfo begin_info{};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    if (vkBeginCommandBuffer(command_buffers[image_index], &begin_info) != VK_SUCCESS) {
+        error(64, "[application] Failed to begin recording command buffer!");
+    }
+
+    VkRenderPassBeginInfo render_pass_info{};
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    render_pass_info.renderPass = swapchain->render_pass;
+    render_pass_info.framebuffer = swapchain->framebuffer_at(static_cast<s32>(image_index));
+    render_pass_info.renderArea.offset = { 0, 0 };
+    render_pass_info.renderArea.extent = swapchain->swapchain_extent;
+
+    std::array<VkClearValue, 2> clear_values{};
+    clear_values[0].color = { 0.1f, 0.1f, 0.1f, 1.0f };
+    clear_values[1].depthStencil = { 1.0f, 0 };
+    render_pass_info.clearValueCount = static_cast<u32>(clear_values.size());
+    render_pass_info.pClearValues = clear_values.data();
+
+    vkCmdBeginRenderPass(command_buffers[image_index], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<f32>(swapchain->swapchain_extent.width);
+    viewport.height = static_cast<f32>(swapchain->swapchain_extent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(command_buffers[image_index], 0, 1, &viewport);
+
+    VkRect2D scissor{ { 0, 0 }, swapchain->swapchain_extent };
+    vkCmdSetScissor(command_buffers[image_index], 0, 1, &scissor);
+
+    pipeline->bind(command_buffers[image_index]);
+    model->bind(command_buffers[image_index]);
+    model->draw(command_buffers[image_index]);
+
+    vkCmdEndRenderPass(command_buffers[image_index]);
+    if (vkEndCommandBuffer(command_buffers[image_index]) != VK_SUCCESS) {
+        error(64, "[application] Failed to record command buffer!");
+    }
+}
+
 
 }// namespace rt

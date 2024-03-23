@@ -61,6 +61,13 @@ public:
     /// @return A value that indicates whether the window should close
     bool should_close() const;
 
+    /// Indicates whether the window is resized or not
+    /// @return A value that indicates whether the window is resized or not
+    bool is_window_resized() const;
+
+    /// Clears the window resize flag
+    void clear_window_resized();
+
     /// Creates a surface for the specified Vulkan instance
     /// @param instance The Vulkan instance
     /// @param surface The surface
@@ -71,10 +78,17 @@ public:
     VkExtent2D extent() const;
 
 private:
+    /// Callback for when the framebuffer resizes
+    /// @param window The GLFW window handle
+    /// @param width The new width of the framebuffer
+    /// @param height The new height of the framebuffer
+    static void framebuffer_resize_callback(GLFWwindow *window, s32 width, s32 height);
+
     /// Our list of friends :)
     friend class Device;
     friend class Application;
 
+    bool framebuffer_resized;
     Specification spec;
     GLFWwindow *window;
 };

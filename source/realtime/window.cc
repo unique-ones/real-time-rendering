@@ -29,11 +29,14 @@
 namespace rt {
 
 /// Creates a window using the provided specification.
-Window::Window(Specification specification) : spec(std::move(specification)) {
+Window::Window(Specification specification) : framebuffer_resized(false), spec(std::move(specification)) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     window = glfwCreateWindow(spec.width, spec.height, spec.name.c_str(), nullptr, nullptr);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
 }
 
 /// Destroys the window and its draw surface
@@ -46,6 +49,16 @@ bool Window::should_close() const {
     return glfwWindowShouldClose(window);
 }
 
+/// Indicates whether the window is resized or not
+bool Window::is_window_resized() const {
+    return framebuffer_resized;
+}
+
+/// Clears the window resize flag
+void Window::clear_window_resized() {
+    framebuffer_resized = false;
+}
+
 /// Creates a surface for the specified Vulkan instance
 void Window::create_surface(VkInstance instance, VkSurfaceKHR *surface) const {
     if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
@@ -56,6 +69,14 @@ void Window::create_surface(VkInstance instance, VkSurfaceKHR *surface) const {
 /// Retrieves the extent of the window
 VkExtent2D Window::extent() const {
     return { static_cast<u32>(spec.width), static_cast<u32>(spec.height) };
+}
+
+/// Callback for when the framebuffer resizes
+void Window::framebuffer_resize_callback(GLFWwindow *window, s32 width, s32 height) {
+    auto *win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+    win->framebuffer_resized = true;
+    win->spec.width = width;
+    win->spec.height = height;
 }
 
 }// namespace rt

@@ -31,23 +31,27 @@
 namespace rt {
 
 struct PipelineDescription {
-    VkViewport viewport;
-    VkRect2D scissor;
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
-    VkPipelineRasterizationStateCreateInfo rasterization_info;
-    VkPipelineMultisampleStateCreateInfo multisample_info;
-    VkPipelineColorBlendAttachmentState color_blend_attachment;
-    VkPipelineColorBlendStateCreateInfo color_blend_info;
-    VkPipelineDepthStencilStateCreateInfo depth_stencil_info;
-    VkPipelineLayout pipeline_layout;
-    VkRenderPass render_pass;
-    u32 subpass;
+    VkPipelineViewportStateCreateInfo viewport_info{};
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_info{};
+    VkPipelineRasterizationStateCreateInfo rasterization_info{};
+    VkPipelineMultisampleStateCreateInfo multisample_info{};
+    VkPipelineColorBlendAttachmentState color_blend_attachment{};
+    VkPipelineColorBlendStateCreateInfo color_blend_info{};
+    VkPipelineDepthStencilStateCreateInfo depth_stencil_info{};
+    std::vector<VkDynamicState> dynamic_state_enables;
+    VkPipelineDynamicStateCreateInfo dynamic_state_info{};
+    VkPipelineLayout pipeline_layout{};
+    VkRenderPass render_pass{};
+    u32 subpass{};
+
+    PipelineDescription() = default;
+
+    /// Pipeline descriptions must not be copied
+    PipelineDescription(const PipelineDescription &) = delete;
+    PipelineDescription &operator=(const PipelineDescription &) = delete;
 
     /// Creates a default pipeline description
-    /// @param width The width of the viewport
-    /// @param height The height of the viewport
-    /// @return A pipeline description
-    static PipelineDescription default_description(u32 width, u32 height);
+    static void default_description(PipelineDescription &description);
 };
 
 class Pipeline {

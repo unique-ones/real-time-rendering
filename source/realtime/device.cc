@@ -200,7 +200,7 @@ Device::~Device() {
 }
 
 /// Checks for swapchain support of the current device
-SwapChainDetails Device::swapchain_support() const {
+SwapchainDetails Device::swapchain_support() const {
     return swapchain_support(physical_device);
 }
 
@@ -416,8 +416,8 @@ QueueFamilyIndices Device::find_queue_families(VkPhysicalDevice device) const {
 }
 
 /// Checks for swapchain support of the specified device
-SwapChainDetails Device::swapchain_support(VkPhysicalDevice device) const {
-    SwapChainDetails details;
+SwapchainDetails Device::swapchain_support(VkPhysicalDevice device) const {
+    SwapchainDetails details;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
     u32 format_count;

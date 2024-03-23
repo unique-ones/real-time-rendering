@@ -30,82 +30,80 @@
 namespace rt {
 
 /// Creates a default pipeline description
-PipelineDescription PipelineDescription::default_description(u32 width, u32 height) {
-    PipelineDescription result{};
+void PipelineDescription::default_description(PipelineDescription &description) {
+    description.viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    description.viewport_info.viewportCount = 1;
+    description.viewport_info.pViewports = nullptr;
+    description.viewport_info.scissorCount = 1;
+    description.viewport_info.pScissors = nullptr;
 
     /// TODO(elias): Add support for specifying different topologies
-    result.input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    result.input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    result.input_assembly_info.primitiveRestartEnable = VK_FALSE;
+    description.input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    description.input_assembly_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    description.input_assembly_info.primitiveRestartEnable = VK_FALSE;
 
-    result.viewport.x = 0.0f;
-    result.viewport.y = 0.0f;
-    result.viewport.width = static_cast<f32>(width);
-    result.viewport.height = static_cast<f32>(height);
-    result.viewport.minDepth = 0.0f;
-    result.viewport.maxDepth = 1.0f;
-
-    result.scissor.offset = { 0, 0 };
-    result.scissor.extent = { width, height };
-
-    result.rasterization_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    result.rasterization_info.depthClampEnable = VK_FALSE;
-    result.rasterization_info.rasterizerDiscardEnable = VK_FALSE;
-    result.rasterization_info.polygonMode = VK_POLYGON_MODE_FILL;
-    result.rasterization_info.lineWidth = 1.0f;
+    description.rasterization_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    description.rasterization_info.depthClampEnable = VK_FALSE;
+    description.rasterization_info.rasterizerDiscardEnable = VK_FALSE;
+    description.rasterization_info.polygonMode = VK_POLYGON_MODE_FILL;
+    description.rasterization_info.lineWidth = 1.0f;
 
     /// TODO(elias): Try out back culling
-    result.rasterization_info.cullMode = VK_CULL_MODE_NONE;
-    result.rasterization_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    result.rasterization_info.depthBiasEnable = VK_FALSE;
-    result.rasterization_info.depthBiasConstantFactor = 0.0f;
-    result.rasterization_info.depthBiasClamp = 0.0f;
-    result.rasterization_info.depthBiasSlopeFactor = 0.0f;
+    description.rasterization_info.cullMode = VK_CULL_MODE_NONE;
+    description.rasterization_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    description.rasterization_info.depthBiasEnable = VK_FALSE;
+    description.rasterization_info.depthBiasConstantFactor = 0.0f;
+    description.rasterization_info.depthBiasClamp = 0.0f;
+    description.rasterization_info.depthBiasSlopeFactor = 0.0f;
 
-    result.multisample_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    result.multisample_info.sampleShadingEnable = VK_FALSE;
-    result.multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-    result.multisample_info.minSampleShading = 1.0f;
-    result.multisample_info.pSampleMask = nullptr;
-    result.multisample_info.alphaToCoverageEnable = VK_FALSE;
-    result.multisample_info.alphaToOneEnable = VK_FALSE;
+    description.multisample_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    description.multisample_info.sampleShadingEnable = VK_FALSE;
+    description.multisample_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    description.multisample_info.minSampleShading = 1.0f;
+    description.multisample_info.pSampleMask = nullptr;
+    description.multisample_info.alphaToCoverageEnable = VK_FALSE;
+    description.multisample_info.alphaToOneEnable = VK_FALSE;
 
-    result.color_blend_attachment.colorWriteMask =
+    description.color_blend_attachment.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    result.color_blend_attachment.blendEnable = VK_FALSE;
-    result.color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    result.color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-    result.color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-    result.color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    result.color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    result.color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    description.color_blend_attachment.blendEnable = VK_FALSE;
+    description.color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    description.color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+    description.color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+    description.color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    description.color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    description.color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
-    result.color_blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    result.color_blend_info.logicOpEnable = VK_FALSE;
-    result.color_blend_info.logicOp = VK_LOGIC_OP_COPY;
-    result.color_blend_info.attachmentCount = 1;
-    result.color_blend_info.pAttachments = &result.color_blend_attachment;
-    result.color_blend_info.blendConstants[0] = 0.0f;
-    result.color_blend_info.blendConstants[1] = 0.0f;
-    result.color_blend_info.blendConstants[2] = 0.0f;
-    result.color_blend_info.blendConstants[3] = 0.0f;
+    description.color_blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    description.color_blend_info.logicOpEnable = VK_FALSE;
+    description.color_blend_info.logicOp = VK_LOGIC_OP_COPY;
+    description.color_blend_info.attachmentCount = 1;
+    description.color_blend_info.pAttachments = &description.color_blend_attachment;
+    description.color_blend_info.blendConstants[0] = 0.0f;
+    description.color_blend_info.blendConstants[1] = 0.0f;
+    description.color_blend_info.blendConstants[2] = 0.0f;
+    description.color_blend_info.blendConstants[3] = 0.0f;
 
-    result.depth_stencil_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    result.depth_stencil_info.depthTestEnable = VK_TRUE;
-    result.depth_stencil_info.depthWriteEnable = VK_TRUE;
-    result.depth_stencil_info.depthCompareOp = VK_COMPARE_OP_LESS;
-    result.depth_stencil_info.depthBoundsTestEnable = VK_FALSE;
-    result.depth_stencil_info.minDepthBounds = 0.0f;
-    result.depth_stencil_info.maxDepthBounds = 1.0f;
-    result.depth_stencil_info.stencilTestEnable = VK_FALSE;
-    result.depth_stencil_info.front = {};
-    result.depth_stencil_info.back = {};
+    description.depth_stencil_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    description.depth_stencil_info.depthTestEnable = VK_TRUE;
+    description.depth_stencil_info.depthWriteEnable = VK_TRUE;
+    description.depth_stencil_info.depthCompareOp = VK_COMPARE_OP_LESS;
+    description.depth_stencil_info.depthBoundsTestEnable = VK_FALSE;
+    description.depth_stencil_info.minDepthBounds = 0.0f;
+    description.depth_stencil_info.maxDepthBounds = 1.0f;
+    description.depth_stencil_info.stencilTestEnable = VK_FALSE;
+    description.depth_stencil_info.front = {};
+    description.depth_stencil_info.back = {};
 
-    result.pipeline_layout = nullptr;
-    result.render_pass = nullptr;
-    result.subpass = 0;
+    description.pipeline_layout = nullptr;
+    description.render_pass = nullptr;
+    description.subpass = 0;
 
-    return result;
+    description.dynamic_state_enables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+    description.dynamic_state_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    description.dynamic_state_info.pDynamicStates = description.dynamic_state_enables.data();
+    description.dynamic_state_info.dynamicStateCount = static_cast<u32>(description.dynamic_state_enables.size());
+    description.dynamic_state_info.flags = 0;
 }
 
 /// Creates a new pipeline instance from the specified vertex and fragment shaders
@@ -175,25 +173,18 @@ void Pipeline::create_pipeline(const std::filesystem::path &vertex,
     vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
     vertex_input_info.pVertexBindingDescriptions = binding_descriptions.data();
 
-    VkPipelineViewportStateCreateInfo viewport_info{};
-    viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewport_info.viewportCount = 1;
-    viewport_info.pViewports = &description.viewport;
-    viewport_info.scissorCount = 1;
-    viewport_info.pScissors = &description.scissor;
-
     VkGraphicsPipelineCreateInfo pipeline_info{};
     pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipeline_info.stageCount = 2;
     pipeline_info.pStages = stages.data();
     pipeline_info.pVertexInputState = &vertex_input_info;
     pipeline_info.pInputAssemblyState = &description.input_assembly_info;
-    pipeline_info.pViewportState = &viewport_info;
+    pipeline_info.pViewportState = &description.viewport_info;
     pipeline_info.pRasterizationState = &description.rasterization_info;
     pipeline_info.pMultisampleState = &description.multisample_info;
     pipeline_info.pColorBlendState = &description.color_blend_info;
     pipeline_info.pDepthStencilState = &description.depth_stencil_info;
-    pipeline_info.pDynamicState = nullptr;
+    pipeline_info.pDynamicState = &description.dynamic_state_info;
     pipeline_info.layout = description.pipeline_layout;
     pipeline_info.renderPass = description.render_pass;
     pipeline_info.subpass = description.subpass;

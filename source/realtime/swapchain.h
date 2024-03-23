@@ -24,6 +24,7 @@
 #ifndef REALTIME_SWAPCHAIN_H
 #define REALTIME_SWAPCHAIN_H
 
+#include <memory>
 #include <vector>
 
 #include "device.h"
@@ -36,6 +37,12 @@ public:
     /// @param device The device
     /// @param window_extent The extent of the window
     Swapchain(Device &device, VkExtent2D window_extent);
+
+    /// Creates a new swapchain by reusing resources of a previous swapchain
+    /// @param device The device
+    /// @param window_extent The extent of the window
+    /// @param previous The previous swapchain
+    Swapchain(Device &device, VkExtent2D window_extent, std::shared_ptr<Swapchain> previous);
 
     /// Destroys all swapchain objects
     ~Swapchain();
@@ -86,6 +93,9 @@ public:
     u32 height() const;
 
 private:
+    /// Initializes the swapchain
+    void init();
+
     /// Creates the internal Vulkan swapchain
     void create_swapchain();
 
@@ -114,7 +124,10 @@ private:
 
     Device &device;
     VkExtent2D window_extent;
+
     VkSwapchainKHR swapchain;
+    std::shared_ptr<Swapchain> previous;
+
     VkFormat swapchain_image_format;
     VkExtent2D swapchain_extent;
 
