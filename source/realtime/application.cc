@@ -27,6 +27,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include "application.h"
 #include "utility.h"
@@ -34,16 +35,17 @@
 namespace rt {
 
 struct PushConstantData {
+    glm::mat2 transform{ 1.0f };
     glm::vec2 offset;
     alignas(16) glm::vec3 color;
 };
 
 /// Creates a realtime application
 Application::Application(Specification specification)
-    : window(std::move(specification)),
-      device(window),
+    : window{ std::move(specification) },
+      device{ window },
       pipeline_layout{} {
-    load_models();
+    load_entities();
     create_pipeline_layout();
     recreate_swapchain();
     create_command_buffers();
@@ -65,7 +67,7 @@ void Application::run() {
 }
 
 /// Loads the models
-void Application::load_models() {
+void Application::load_entities() {
     // clang-format off
     std::vector vertices = {
         Model::Vertex{ { -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
@@ -74,7 +76,13 @@ void Application::load_models() {
     };
     // clang-format on
 
-    model = std::make_unique<Model>(device, vertices);
+    auto model = std::make_shared<Model>(device, vertices);
+    auto &triangle = entities.emplace_back(Entity::create());
+    triangle.model = model;
+    triangle.color = { 0.1f, 0.8f, 0.1f };
+    triangle.transform.translation = { 0.2f, 0.0f };
+    triangle.transform.scale = { 2.0f, 0.5f };
+    triangle.transform.rotation = 0.25f * glm::two_pi<f32>();
 }
 
 /// Creates the layout of the pipeline
@@ -216,23 +224,7 @@ void Application::record_command_buffer(u32 image_index) {
 
     VkRect2D scissor{ { 0, 0 }, swapchain->swapchain_extent };
     vkCmdSetScissor(command_buffers[image_index], 0, 1, &scissor);
-
-    pipeline->bind(command_buffers[image_index]);
-    model->bind(command_buffers[image_index]);
-
-    static u16 frame = 0;
-    frame = (frame + 1) % 1000;
-
-    for (u32 i = 0; i < 4; ++i) {
-        PushConstantData push{};
-
-        auto weight = static_cast<f32>(i);
-        push.offset = { -0.5f + frame * 0.002f, -0.4f + 0.25f * weight };
-        push.color = { 0.0f, 0.0f, 0.2f + 0.2f * weight };
-        vkCmdPushConstants(command_buffers[image_index], pipeline_layout,
-                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof push, &push);
-        model->draw(command_buffers[image_index]);
-    }
+    render_entities(command_buffers[image_index]);
 
     vkCmdEndRenderPass(command_buffers[image_index]);
     if (vkEndCommandBuffer(command_buffers[image_index]) != VK_SUCCESS) {
@@ -240,5 +232,21 @@ void Application::record_command_buffer(u32 image_index) {
     }
 }
 
+/// Renders the entities
+void Application::render_entities(VkCommandBuffer command_buffer) {
+    pipeline->bind(command_buffer);
+    for (auto &entity : entities) {
+        entity.transform.rotation = glm::mod(entity.transform.rotation + 0.01f, glm::two_pi<f32>());
+
+        PushConstantData push{};
+        push.transform = entity.transform.transform();
+        push.offset = entity.transform.translation;
+        push.color = entity.color;
+        vkCmdPushConstants(command_buffer, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0, sizeof push, &push);
+        entity.model->bind(command_buffer);
+        entity.model->draw(command_buffer);
+    }
+}
 
 }// namespace rt

@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "device.h"
-#include "model.h"
+#include "entity.h"
 #include "pipeline.h"
 #include "swapchain.h"
 #include "window.h"
@@ -48,17 +48,17 @@ public:
     ~Application();
 
     /// An application cannot be copied or moved
-    Application(const Application &a) = delete;
-    Application &operator=(const Application &a) = delete;
-    Application(Application &&a) = delete;
-    Application &operator=(Application &&a) = delete;
+    Application(const Application &) = delete;
+    Application &operator=(const Application &) = delete;
+    Application(Application &&) = delete;
+    Application &operator=(Application &&) = delete;
 
     /// Runs the application
     void run();
 
 private:
-    /// Loads the models
-    void load_models();
+    /// Loads the entities
+    void load_entities();
 
     /// Creates the layout of the pipeline
     void create_pipeline_layout();
@@ -81,13 +81,17 @@ private:
     /// Records the command buffer using the specified image index
     void record_command_buffer(u32 image_index);
 
+    /// Renders the entities
+    /// @param command_buffer The command buffer
+    void render_entities(VkCommandBuffer command_buffer);
+
     Window window;
     Device device;
     std::unique_ptr<Swapchain> swapchain;
     std::unique_ptr<Pipeline> pipeline;
     VkPipelineLayout pipeline_layout;
     std::vector<VkCommandBuffer> command_buffers;
-    std::unique_ptr<Model> model;
+    std::vector<Entity> entities;
 };
 
 }// namespace rt
