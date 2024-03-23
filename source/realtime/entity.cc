@@ -21,20 +21,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "entity.h"
 
 namespace rt {
 
 /// Creates a new transform component
-Transform2DComponent::Transform2DComponent() : translation{}, scale{ 1.0f, 1.0f }, rotation{} { }
+TransformComponent::TransformComponent() : translation{}, scale{ 1.0f }, rotation{} { }
 
 /// Retrieves the transform of the component
-glm::mat2 Transform2DComponent::transform() const {
-    auto s = glm::sin(rotation);
-    auto c = glm::cos(rotation);
-    glm::mat2 rot = { c, s, -s, c };
-    glm::mat2 sc = { scale.x, 0.0f, 0.0f, scale.y };
-    return rot * sc;
+glm::mat4 TransformComponent::transform() const {
+    auto t = glm::translate(glm::mat4{ 1.0f }, translation);
+    t = glm::rotate(t, rotation.y, { 0.0f, 1.0f, 0.0f });
+    t = glm::rotate(t, rotation.x, { 1.0f, 0.0f, 0.0f });
+    t = glm::rotate(t, rotation.z, { 0.0f, 0.0f, 1.0f });
+    t = glm::scale(t, scale);
+    return t;
 }
 
 /// Creates a new entity

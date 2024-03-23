@@ -26,6 +26,8 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+
+#include <csetjmp>
 #include <string>
 
 #include "realtime.h"
@@ -36,6 +38,8 @@ namespace rt {
 /// responsible for handling all user input.
 class Window {
 public:
+    constexpr static auto VERTICAL_SYNC = true;
+
     /// The window specification tells the window the desired size and the
     /// title.
     struct Specification {

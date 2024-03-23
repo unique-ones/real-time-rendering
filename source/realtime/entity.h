@@ -30,17 +30,18 @@
 
 namespace rt {
 
-struct Transform2DComponent {
-    glm::vec2 translation;
-    glm::vec2 scale;
-    f32 rotation;
+struct TransformComponent {
+    glm::vec3 translation;
+    glm::vec3 scale;
+    glm::vec3 rotation;
 
     /// Creates a new transform component
-    Transform2DComponent();
+    TransformComponent();
 
-    /// Retrieves the transform of the component
+    /// Retrieves the transform of the component, which corresponds to translation * Ry * Rx * Ry * scale
+    /// Note that the rotation convention uses tait-bryan angles with axis order Y(1), X(2) and Z(3)
     /// @return The transform
-    glm::mat2 transform() const;
+    glm::mat4 transform() const;
 };
 
 class Entity {
@@ -63,7 +64,7 @@ public:
 
     std::shared_ptr<Model> model;
     glm::vec3 color;
-    Transform2DComponent transform;
+    TransformComponent transform;
 
 private:
     /// Creates a new entity

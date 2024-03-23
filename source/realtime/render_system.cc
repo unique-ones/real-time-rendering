@@ -35,8 +35,7 @@
 namespace rt {
 
 struct PushConstantData {
-    glm::mat2 transform{ 1.0f };
-    glm::vec2 offset;
+    glm::mat4 transform{ 1.0f };
     alignas(16) glm::vec3 color;
 };
 
@@ -85,11 +84,11 @@ void RenderSystem::create_pipeline(VkRenderPass render_pass) {
 void RenderSystem::render_entities(VkCommandBuffer command_buffer, std::vector<Entity> &entities) {
     pipeline->bind(command_buffer);
     for (auto &entity : entities) {
-        entity.transform.rotation = glm::mod(entity.transform.rotation + 0.01f, glm::two_pi<f32>());
+        entity.transform.rotation.y = glm::mod(entity.transform.rotation.y + 0.01f, glm::two_pi<f32>());
+        entity.transform.rotation.x = glm::mod(entity.transform.rotation.x + 0.005f, glm::two_pi<f32>());
 
         PushConstantData push{};
         push.transform = entity.transform.transform();
-        push.offset = entity.transform.translation;
         push.color = entity.color;
         vkCmdPushConstants(command_buffer, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                            0, sizeof push, &push);

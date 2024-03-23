@@ -35,6 +35,72 @@
 
 namespace rt {
 
+namespace {
+
+/// Creates a cube model
+/// @param device The Vulkan d1evice
+/// @param offset The offset of the model
+/// @return A cube model
+std::unique_ptr<Model> create_cube_model(Device &device, glm::vec3 offset) {
+    std::vector<Model::Vertex> vertices{
+        // left face (white)
+        { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
+        { { -.5f, .5f, .5f }, { .9f, .9f, .9f } },
+        { { -.5f, -.5f, .5f }, { .9f, .9f, .9f } },
+        { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
+        { { -.5f, .5f, -.5f }, { .9f, .9f, .9f } },
+        { { -.5f, .5f, .5f }, { .9f, .9f, .9f } },
+
+        // right face (yellow)
+        { { .5f, -.5f, -.5f }, { .8f, .8f, .1f } },
+        { { .5f, .5f, .5f }, { .8f, .8f, .1f } },
+        { { .5f, -.5f, .5f }, { .8f, .8f, .1f } },
+        { { .5f, -.5f, -.5f }, { .8f, .8f, .1f } },
+        { { .5f, .5f, -.5f }, { .8f, .8f, .1f } },
+        { { .5f, .5f, .5f }, { .8f, .8f, .1f } },
+
+        // top face (orange, remember y axis points down)
+        { { -.5f, -.5f, -.5f }, { .9f, .6f, .1f } },
+        { { .5f, -.5f, .5f }, { .9f, .6f, .1f } },
+        { { -.5f, -.5f, .5f }, { .9f, .6f, .1f } },
+        { { -.5f, -.5f, -.5f }, { .9f, .6f, .1f } },
+        { { .5f, -.5f, -.5f }, { .9f, .6f, .1f } },
+        { { .5f, -.5f, .5f }, { .9f, .6f, .1f } },
+
+        // bottom face (red)
+        { { -.5f, .5f, -.5f }, { .8f, .1f, .1f } },
+        { { .5f, .5f, .5f }, { .8f, .1f, .1f } },
+        { { -.5f, .5f, .5f }, { .8f, .1f, .1f } },
+        { { -.5f, .5f, -.5f }, { .8f, .1f, .1f } },
+        { { .5f, .5f, -.5f }, { .8f, .1f, .1f } },
+        { { .5f, .5f, .5f }, { .8f, .1f, .1f } },
+
+        // nose face (blue)
+        { { -.5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
+        { { .5f, .5f, 0.5f }, { .1f, .1f, .8f } },
+        { { -.5f, .5f, 0.5f }, { .1f, .1f, .8f } },
+        { { -.5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
+        { { .5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
+        { { .5f, .5f, 0.5f }, { .1f, .1f, .8f } },
+
+        // tail face (green)
+        { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
+        { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
+        { { -.5f, .5f, -0.5f }, { .1f, .8f, .1f } },
+        { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
+        { { .5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
+        { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
+    };
+
+    for (auto &[position, _] : vertices) {
+        position += offset;
+    }
+
+    return std::make_unique<Model>(device, vertices);
+}
+
+}// namespace
+
 /// Creates a realtime application
 Application::Application(Specification specification)
     : window{ std::move(specification) },
@@ -65,21 +131,10 @@ void Application::run() {
 
 /// Loads the models
 void Application::load_entities() {
-    // clang-format off
-    std::vector vertices = {
-        Model::Vertex{ { -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
-        Model::Vertex{ { 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
-        Model::Vertex{ { 0.0f, -0.5f }, { 0.0f, 0.0f, 1.0f } }
-    };
-    // clang-format on
-
-    auto model = std::make_shared<Model>(device, vertices);
-    auto &triangle = entities.emplace_back(Entity::create());
-    triangle.model = model;
-    triangle.color = { 0.1f, 0.8f, 0.1f };
-    triangle.transform.translation = { 0.2f, 0.0f };
-    triangle.transform.scale = { 2.0f, 0.5f };
-    triangle.transform.rotation = 0.25f * glm::two_pi<f32>();
+    auto &cube = entities.emplace_back(Entity::create());
+    cube.model = std::move(create_cube_model(device, glm::vec3{ 0.0f }));
+    cube.transform.translation = { 0.0f, 0.0f, 0.5f };
+    cube.transform.scale = { 0.5f, 0.5f, 0.5f };
 }
 
 }// namespace rt

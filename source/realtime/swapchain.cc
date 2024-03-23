@@ -47,9 +47,11 @@ VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatK
 /// @param modes The present modes to choose from
 /// @return A suitable present mode (MAILBOX)
 VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR> &modes) {
-    for (const auto &mode : modes) {
-        if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            return mode;
+    if constexpr (not Window::VERTICAL_SYNC) {
+        for (const auto &mode : modes) {
+            if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                return mode;
+            }
         }
     }
     return VK_PRESENT_MODE_FIFO_KHR;
