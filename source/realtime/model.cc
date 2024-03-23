@@ -39,7 +39,13 @@ std::vector<VkVertexInputAttributeDescription> Model::Vertex::attribute_descript
     position.binding = 0;
     position.location = 0;
     position.format = VK_FORMAT_R32G32_SFLOAT;
-    position.offset = 0;
+    position.offset = offsetof(Vertex, position);
+
+    auto &color = attributes.emplace_back();
+    color.binding = 0;
+    color.location = 1;
+    color.format = VK_FORMAT_R32G32B32_SFLOAT;
+    color.offset = offsetof(Vertex, color);
     return attributes;
 }
 

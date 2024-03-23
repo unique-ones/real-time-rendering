@@ -59,9 +59,9 @@ void Application::run() {
 void Application::load_models() {
     // clang-format off
     std::vector vertices = {
-        Model::Vertex{ { -0.5f, -0.5f } },
-        Model::Vertex{ { 0.5f, -0.5f } },
-        Model::Vertex{ { 0.0f, 0.5f } }
+        Model::Vertex{ { -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f } },
+        Model::Vertex{ { 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
+        Model::Vertex{ { 0.0f, -0.5f }, { 0.0f, 0.0f, 1.0f } }
     };
     // clang-format on
 

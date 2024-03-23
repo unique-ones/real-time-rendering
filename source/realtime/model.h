@@ -37,6 +37,7 @@ class Model {
 public:
     struct Vertex {
         glm::vec2 position;
+        glm::vec3 color;
 
         /// Retrieves the binding descriptions for a vertex
         /// @return The binding decriptions for a vertex
