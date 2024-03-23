@@ -91,7 +91,7 @@ bool vulkan_validation_layer_support() {
                 break;
             }
         }
-        if (!found) {
+        if (not found) {
             return false;
         }
     }
@@ -125,7 +125,7 @@ void vulkan_validate_required_extensions() {
     }
 
     for (auto required_extensions = vulkan_required_extensions(); const auto &required : required_extensions) {
-        if (!available.contains(required)) {
+        if (not available.contains(required)) {
             error(64, "[device] Missing required Vulkan extension.");
         }
     }
@@ -163,7 +163,7 @@ bool vulkan_device_extension_support(VkPhysicalDevice device) {
 
 /// Checks whether the queue family indices are complete
 bool QueueFamilyIndices::complete() const {
-    return graphics_family && present_family;
+    return graphics_family and present_family;
 }
 
 /// Creates a device for the specified window
@@ -209,7 +209,7 @@ u32 Device::find_memory_type(u32 filter, VkMemoryPropertyFlags props) const {
     VkPhysicalDeviceMemoryProperties memory_properties;
     vkGetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
     for (u32 i = 0; i < memory_properties.memoryTypeCount; i++) {
-        if ((filter & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & props) == props) {
+        if ((filter & (1 << i)) and (memory_properties.memoryTypes[i].propertyFlags & props) == props) {
             return i;
         }
     }
@@ -224,10 +224,10 @@ VkFormat Device::find_supported_format(const std::vector<VkFormat> &candidates,
     for (auto format : candidates) {
         VkFormatProperties format_properties{};
         vkGetPhysicalDeviceFormatProperties(physical_device, format, &format_properties);
-        if (tiling == VK_IMAGE_TILING_LINEAR && (format_properties.linearTilingFeatures & features) == features) {
+        if (tiling == VK_IMAGE_TILING_LINEAR and (format_properties.linearTilingFeatures & features) == features) {
             return format;
         }
-        if (tiling == VK_IMAGE_TILING_OPTIMAL && (format_properties.optimalTilingFeatures & features) == features) {
+        if (tiling == VK_IMAGE_TILING_OPTIMAL and (format_properties.optimalTilingFeatures & features) == features) {
             return format;
         }
     }
@@ -237,7 +237,7 @@ VkFormat Device::find_supported_format(const std::vector<VkFormat> &candidates,
 /// Creates the Vulkan instance
 void Device::create_instance() {
     if constexpr (DeviceValidation) {
-        if (!vulkan_validation_layer_support()) {
+        if (not vulkan_validation_layer_support()) {
             error(64, "[device] Validation layers were requested, but are not supported!");
         }
     }
@@ -280,7 +280,7 @@ void Device::create_instance() {
 
 /// Creates a debug messenger if validation is turned on
 void Device::create_messenger() {
-    if constexpr (!DeviceValidation) {
+    if constexpr (not DeviceValidation) {
         return;
     }
 
@@ -380,12 +380,12 @@ bool Device::is_device_suitable(VkPhysicalDevice device) const {
 
     if (extensions_supported) {
         auto [_, formats, present_modes] = swapchain_support(device);
-        swapchain_adequate = !formats.empty() && !present_modes.empty();
+        swapchain_adequate = !formats.empty() and !present_modes.empty();
     }
 
     VkPhysicalDeviceFeatures supported_features;
     vkGetPhysicalDeviceFeatures(device, &supported_features);
-    return indices.complete() && extensions_supported && swapchain_adequate && supported_features.samplerAnisotropy;
+    return indices.complete() and extensions_supported and swapchain_adequate and supported_features.samplerAnisotropy;
 }
 
 /// Finds the queue family indices for the specified physical device
@@ -397,13 +397,13 @@ QueueFamilyIndices Device::find_queue_families(VkPhysicalDevice device) const {
 
     QueueFamilyIndices indices{};
     for (s32 idx = 0; const auto &family : queue_families) {
-        if (family.queueCount > 0 && family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        if (family.queueCount > 0 and family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphics_family = idx;
         }
 
         VkBool32 present_support = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(device, idx, surface, &present_support);
-        if (family.queueCount > 0 && present_support) {
+        if (family.queueCount > 0 and present_support) {
             indices.present_family = idx;
         }
         if (indices.complete()) {

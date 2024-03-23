@@ -21,51 +21,50 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REALTIME_APPLICATION_H
-#define REALTIME_APPLICATION_H
+#ifndef REALTIME_RENDER_SYSTEM_H
+#define REALTIME_RENDER_SYSTEM_H
 
 #include <memory>
 #include <vector>
 
 #include "device.h"
 #include "entity.h"
-#include "renderer.h"
-#include "window.h"
+#include "pipeline.h"
 
 namespace rt {
 
-class Application {
+class RenderSystem {
 public:
-    /// Alias for window specification
-    using Specification = Window::Specification;
+    /// Creates a realtime render system
+    /// @param device The device
+    /// @param render_pass The render pass
+    explicit RenderSystem(Device &device, VkRenderPass render_pass);
 
-    /// Creates a realtime application
-    /// @param specification The application specification
-    explicit Application(Specification specification);
+    /// Destroys all render system objects
+    ~RenderSystem();
 
-    /// Destroys all application objects
-    ~Application();
+    /// A render system cannot be copied or moved
+    RenderSystem(const RenderSystem &) = delete;
+    RenderSystem &operator=(const RenderSystem &) = delete;
+    RenderSystem(RenderSystem &&) = delete;
+    RenderSystem &operator=(RenderSystem &&) = delete;
 
-    /// An application cannot be copied or moved
-    Application(const Application &) = delete;
-    Application &operator=(const Application &) = delete;
-    Application(Application &&) = delete;
-    Application &operator=(Application &&) = delete;
-
-    /// Runs the application
-    void run();
+    /// Renders the entities
+    /// @param command_buffer The command buffer
+    void render_entities(VkCommandBuffer command_buffer, std::vector<Entity> &entities);
 
 private:
-    /// Loads the entities
-    void load_entities();
+    /// Creates the layout of the pipeline
+    void create_pipeline_layout();
 
-    Window window;
-    Device device;
-    Renderer renderer;
+    /// Creates the pipeline
+    void create_pipeline(VkRenderPass render_pass);
 
-    std::vector<Entity> entities;
+    Device &device;
+    std::unique_ptr<Pipeline> pipeline;
+    VkPipelineLayout pipeline_layout;
 };
 
 }// namespace rt
 
-#endif// REALTIME_APPLICATION_H
+#endif// REALTIME_RENDER_SYSTEM_H

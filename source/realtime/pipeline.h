@@ -70,10 +70,10 @@ public:
     ~Pipeline();
 
     /// A pipeline cannot be copied or moved
-    Pipeline(const Pipeline &p) = delete;
-    Pipeline &operator=(const Pipeline &p) = delete;
-    Pipeline(Pipeline &&p) = delete;
-    Pipeline &operator=(Pipeline &&p) = delete;
+    Pipeline(const Pipeline &) = delete;
+    Pipeline &operator=(const Pipeline &) = delete;
+    Pipeline(Pipeline &&) = delete;
+    Pipeline &operator=(Pipeline &&) = delete;
 
     /// Bind the pipeline for the specified command buffer
     /// @param command_buffer The recording command buffer

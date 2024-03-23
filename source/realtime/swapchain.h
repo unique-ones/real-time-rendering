@@ -33,6 +33,8 @@ namespace rt {
 
 class Swapchain {
 public:
+    constexpr static auto MAX_FRAMES_IN_FLIGHT = 2;
+
     /// Creates a new swapchain
     /// @param device The device
     /// @param window_extent The extent of the window
@@ -92,6 +94,11 @@ public:
     /// @return The swapchain extent height
     u32 height() const;
 
+    /// Compares the formats of the current swapchain to the ones of an other swapchain
+    /// @param other The other swapchain
+    /// @return A value that indicates compatability of the swap chain formats
+    bool compare_swap_formats(const Swapchain &other) const;
+
 private:
     /// Initializes the swapchain
     void init();
@@ -121,6 +128,7 @@ private:
 
     /// Our list of friends :)
     friend class Application;
+    friend class Renderer;
 
     Device &device;
     VkExtent2D window_extent;
@@ -129,6 +137,7 @@ private:
     std::shared_ptr<Swapchain> previous;
 
     VkFormat swapchain_image_format;
+    VkFormat swapchain_depth_format;
     VkExtent2D swapchain_extent;
 
     std::vector<VkFramebuffer> swapchain_framebuffers;

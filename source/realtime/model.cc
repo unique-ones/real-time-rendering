@@ -77,7 +77,7 @@ void Model::draw(VkCommandBuffer command_buffer) const {
 
 void Model::create_vertex_buffers(const std::vector<Vertex> &vertices) {
     vertex_count = static_cast<u32>(vertices.size());
-    assert(vertex_count >= 3 && "[model] Vertex count must be at least 3!");
+    assert(vertex_count >= 3 and "[model] Vertex count must be at least 3!");
 
     auto buffer_size = sizeof(Vertex) * vertex_count;
     device.create_buffer(buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,

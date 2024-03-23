@@ -134,9 +134,9 @@ void Pipeline::bind(VkCommandBuffer command_buffer) const {
 void Pipeline::create_pipeline(const std::filesystem::path &vertex,
                                const std::filesystem::path &fragment,
                                const PipelineDescription &description) {
-    assert(description.pipeline_layout != VK_NULL_HANDLE &&
+    assert(description.pipeline_layout != VK_NULL_HANDLE and
            "[pipeline]  Cannot create graphics pipeline: no pipeline_layout provided in pipeline description!");
-    assert(description.render_pass != VK_NULL_HANDLE &&
+    assert(description.render_pass != VK_NULL_HANDLE and
            "[pipeline] Cannot create graphics pipeline: no render_pass provided in description!");
 
     constexpr auto read_flags = std::ios::binary;

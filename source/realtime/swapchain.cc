@@ -31,14 +31,12 @@ namespace rt {
 
 namespace {
 
-constexpr auto MAX_FRAMES_IN_FLIGHT = 2;
-
 /// Chooses a suitable surface format from a list of formats
 /// @param formats The formats to choose from
 /// @return A suitable surface format
 VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR> &formats) {
     for (const auto &format : formats) {
-        if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+        if (format.format == VK_FORMAT_B8G8R8A8_SRGB and format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return format;
         }
     }
@@ -65,6 +63,7 @@ Swapchain::Swapchain(Device &device, VkExtent2D window_extent)
       window_extent{ window_extent },
       swapchain{},
       swapchain_image_format{},
+      swapchain_depth_format{},
       swapchain_extent{},
       render_pass{},
       current_frame{} {
@@ -78,6 +77,7 @@ Swapchain::Swapchain(Device &device, VkExtent2D window_extent, std::shared_ptr<S
       swapchain{},
       previous{ previous },
       swapchain_image_format{},
+      swapchain_depth_format{},
       swapchain_extent{},
       render_pass{},
       current_frame{} {
@@ -90,7 +90,7 @@ Swapchain::~Swapchain() {
     for (auto image_view : swapchain_image_views) {
         vkDestroyImageView(device.logical_device, image_view, nullptr);
     }
-    if (swapchain != nullptr) {
+    if (swapchain) {
         vkDestroySwapchainKHR(device.logical_device, swapchain, nullptr);
         swapchain = nullptr;
     }
@@ -196,6 +196,12 @@ u32 Swapchain::height() const {
     return swapchain_extent.height;
 }
 
+/// Compares the formats of the current swapchain to the ones of an other swapchain
+bool Swapchain::compare_swap_formats(const Swapchain &other) const {
+    return swapchain_depth_format == other.swapchain_depth_format and
+           swapchain_image_format == other.swapchain_image_format;
+}
+
 /// Initializes the swapchain
 void Swapchain::init() {
     create_swapchain();
@@ -214,7 +220,7 @@ void Swapchain::create_swapchain() {
     auto extent = choose_swap_extent(capabilities);
 
     auto image_count = capabilities.minImageCount + 1;
-    if (capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount) {
+    if (capabilities.maxImageCount > 0 and image_count > capabilities.maxImageCount) {
         image_count = capabilities.maxImageCount;
     }
 
@@ -285,6 +291,7 @@ void Swapchain::create_image_views() {
 /// Creates the depth resources and images
 void Swapchain::create_depth_resources() {
     auto depth_format = find_depth_format();
+    swapchain_depth_format = depth_format;
     depth_images.resize(image_count());
     depth_image_memorys.resize(image_count());
     depth_image_views.resize(image_count());
@@ -362,11 +369,11 @@ void Swapchain::create_render_pass() {
     subpass.pDepthStencilAttachment = &depth_attachment_ref;
 
     VkSubpassDependency dependency{};
+    dependency.dstSubpass = 0;
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     dependency.srcAccessMask = 0;
     dependency.srcStageMask =
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstSubpass = 0;
     dependency.dstStageMask =
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
@@ -424,9 +431,9 @@ void Swapchain::create_sync_objects() {
 
     for (u64 i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         if (vkCreateSemaphore(device.logical_device, &semaphore_info, nullptr, &image_available_semaphores[i]) !=
-                    VK_SUCCESS ||
+                    VK_SUCCESS or
             vkCreateSemaphore(device.logical_device, &semaphore_info, nullptr, &render_finished_semaphores[i]) !=
-                    VK_SUCCESS ||
+                    VK_SUCCESS or
             vkCreateFence(device.logical_device, &fence_info, nullptr, &in_flight_fences[i]) != VK_SUCCESS) {
             error(64, "[swapchain] Failed to create synchronization objects!");
         }

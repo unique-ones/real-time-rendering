@@ -57,8 +57,8 @@ public:
     ~Model();
 
     /// A model cannot be copied
-    Model(const Model &m) = delete;
-    Model &operator=(const Model &m) = delete;
+    Model(const Model &) = delete;
+    Model &operator=(const Model &) = delete;
 
     /// Binds the current model using the specified command buffer
     /// @param command_buffer The recording command buffer

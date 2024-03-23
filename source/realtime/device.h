@@ -62,10 +62,10 @@ public:
     ~Device();
 
     /// A device cannot be copied or moved
-    Device(const Device &d) = delete;
-    Device &operator=(const Device &d) = delete;
-    Device(Device &&d) = delete;
-    Device &operator=(Device &&d) = delete;
+    Device(const Device &) = delete;
+    Device &operator=(const Device &) = delete;
+    Device(Device &&) = delete;
+    Device &operator=(Device &&) = delete;
 
     /// Checks for swapchain support of the current device
     /// @return Swapchain support details
@@ -169,6 +169,8 @@ private:
     friend class Swapchain;
     friend class Application;
     friend class Model;
+    friend class Renderer;
+    friend class RenderSystem;
 
     Window &window;
     VkInstance instance;

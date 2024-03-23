@@ -52,10 +52,10 @@ public:
     ~Window();
 
     /// A window cannot be copied or moved
-    Window(const Window &w) = delete;
-    Window &operator=(const Window &w) = delete;
-    Window(Window &&w) = delete;
-    Window &operator=(Window &&w) = delete;
+    Window(const Window &) = delete;
+    Window &operator=(const Window &) = delete;
+    Window(Window &&) = delete;
+    Window &operator=(Window &&) = delete;
 
     /// Indicates whether the window should close or not
     /// @return A value that indicates whether the window should close
