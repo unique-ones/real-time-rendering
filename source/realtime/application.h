@@ -28,54 +28,60 @@
 #include <vector>
 
 #include "device.h"
+#include "model.h"
 #include "pipeline.h"
 #include "swapchain.h"
 #include "window.h"
 
 namespace rt {
 
-    class Application {
-    public:
-        /// Alias for window specification
-        using Specification = Window::Specification;
+class Application {
+public:
+    /// Alias for window specification
+    using Specification = Window::Specification;
 
-        /// Creates a realtime application
-        /// @param specification The application specification
-        explicit Application(Specification specification);
+    /// Creates a realtime application
+    /// @param specification The application specification
+    explicit Application(Specification specification);
 
-        /// Destroys all application objects
-        ~Application();
+    /// Destroys all application objects
+    ~Application();
 
-        /// An application cannot be copied or moved
-        Application(const Application &a) = delete;
-        Application &operator=(const Application &a) = delete;
-        Application(Application &&a) = delete;
-        Application &operator=(Application &&a) = delete;
+    /// An application cannot be copied or moved
+    Application(const Application &a) = delete;
+    Application &operator=(const Application &a) = delete;
+    Application(Application &&a) = delete;
+    Application &operator=(Application &&a) = delete;
 
-        /// Runs the application
-        void run();
+    /// Runs the application
+    void run();
 
-    private:
-        /// Creates the layout of the pipeline
-        void create_pipeline_layout();
+private:
+    /// Loads the models
+    void load_models();
 
-        /// Creates the pipeline
-        void create_pipeline();
+    /// Creates the layout of the pipeline
+    void create_pipeline_layout();
 
-        /// Creates the command buffers
-        void create_command_buffers();
+    /// Creates the pipeline
+    void create_pipeline();
 
-        /// Draws a frame
-        void draw_frame();
+    /// Creates the command buffers
+    void create_command_buffers();
 
-        Window window;
-        Device device;
-        Swapchain swapchain;
+    /// Draws a frame
+    void draw_frame();
 
-        std::unique_ptr<Pipeline> pipeline;
-        VkPipelineLayout pipeline_layout;
-        std::vector<VkCommandBuffer> command_buffers;
-    };
+    Window window;
+    Device device;
+    Swapchain swapchain;
+
+    std::unique_ptr<Pipeline> pipeline;
+    VkPipelineLayout pipeline_layout;
+    std::vector<VkCommandBuffer> command_buffers;
+    std::unique_ptr<Model> model;
+};
+
 }// namespace rt
 
 #endif// REALTIME_APPLICATION_H

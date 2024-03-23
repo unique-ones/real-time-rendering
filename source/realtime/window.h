@@ -32,52 +32,53 @@
 
 namespace rt {
 
-    /// A window acts as a draw surface for the realtime engine and is also
-    /// responsible for handling all user input.
-    class Window {
-    public:
-        /// The window specification tells the window the desired size and the
-        /// title.
-        struct Specification {
-            s32 width = 1280;
-            s32 height = 720;
-            std::string name = "Real-time rendering";
-        };
-
-        /// Creates a window using the provided specification.
-        /// @param specification The specification
-        explicit Window(Specification specification);
-
-        /// Destroys the window and its draw surface
-        ~Window();
-
-        /// A window cannot be copied or moved
-        Window(const Window &w) = delete;
-        Window &operator=(const Window &w) = delete;
-        Window(Window &&w) = delete;
-        Window &operator=(Window &&w) = delete;
-
-        /// Indicates whether the window should close or not
-        /// @return A value that indicates whether the window should close
-        bool should_close() const;
-
-        /// Creates a surface for the specified Vulkan instance
-        /// @param instance The Vulkan instance
-        /// @param surface The surface
-        void create_surface(VkInstance instance, VkSurfaceKHR *surface) const;
-
-        /// Retrieves the extent of the window
-        /// @return The extent of the window
-        VkExtent2D extent() const;
-
-    private:
-        /// Our list of friends :)
-        friend class Device;
-        friend class Application;
-
-        Specification spec;
-        GLFWwindow *window;
+/// A window acts as a draw surface for the realtime engine and is also
+/// responsible for handling all user input.
+class Window {
+public:
+    /// The window specification tells the window the desired size and the
+    /// title.
+    struct Specification {
+        s32 width = 800;
+        s32 height = 600;
+        std::string name = "Real-time rendering";
     };
+
+    /// Creates a window using the provided specification.
+    /// @param specification The specification
+    explicit Window(Specification specification);
+
+    /// Destroys the window and its draw surface
+    ~Window();
+
+    /// A window cannot be copied or moved
+    Window(const Window &w) = delete;
+    Window &operator=(const Window &w) = delete;
+    Window(Window &&w) = delete;
+    Window &operator=(Window &&w) = delete;
+
+    /// Indicates whether the window should close or not
+    /// @return A value that indicates whether the window should close
+    bool should_close() const;
+
+    /// Creates a surface for the specified Vulkan instance
+    /// @param instance The Vulkan instance
+    /// @param surface The surface
+    void create_surface(VkInstance instance, VkSurfaceKHR *surface) const;
+
+    /// Retrieves the extent of the window
+    /// @return The extent of the window
+    VkExtent2D extent() const;
+
+private:
+    /// Our list of friends :)
+    friend class Device;
+    friend class Application;
+
+    Specification spec;
+    GLFWwindow *window;
+};
+
 }// namespace rt
 
 #endif// REALTIME_WINDOW_H

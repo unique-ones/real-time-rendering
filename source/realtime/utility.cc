@@ -27,11 +27,11 @@
 
 namespace rt {
 
-    /// Print out an error message to the console and exit the application
-    /// with the specified error code
-    void error(s32 code, std::string_view message) {
-        std::printf("[error] %.*s", static_cast<int>(message.size()), message.data());
-        std::exit(code);
-    }
+/// Print out an error message to the console and exit the application
+/// with the specified error code
+void error(s32 code, std::string_view message) {
+    std::printf("[error] %.*s", static_cast<int>(message.size()), message.data());
+    std::exit(code);
+}
 
 }// namespace rt
