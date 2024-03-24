@@ -38,7 +38,7 @@ namespace rt {
 /// responsible for handling all user input.
 class Window {
 public:
-    constexpr static auto VERTICAL_SYNC = true;
+    constexpr static auto VERTICAL_SYNC = false;
 
     /// The window specification tells the window the desired size and the
     /// title.

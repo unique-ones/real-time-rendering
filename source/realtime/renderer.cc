@@ -49,6 +49,11 @@ VkRenderPass Renderer::swapchain_render_pass() const {
     return swapchain->render_pass;
 }
 
+/// Retrieves the swapchain aspect ratio
+f32 Renderer::aspect_ratio() const {
+    return swapchain->extent_aspect_ratio();
+}
+
 /// Checks whether the frame is already in progress
 bool Renderer::is_frame_in_progress() const {
     return frame_started;

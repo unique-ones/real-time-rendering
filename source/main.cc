@@ -24,7 +24,7 @@
 #include <realtime/application.h>
 
 int main(int argc, char **argv) {
-    auto application = rt::Application{ { .name = "Vulkan application" } };
+    auto application = rt::Application{ { .name = "Real Time Rendering" } };
     application.run();
     return 0;
 }

@@ -21,36 +21,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REALTIME_H
-#define REALTIME_H
+#ifndef REALTIME_CAMERA_H
+#define REALTIME_CAMERA_H
 
-#include <cassert>
-#include <cstdint>
+#include "realtime.h"
+#include "transform.h"
 
-/// Force angles to be specified in radians
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
+namespace rt {
 
-/// Unsigned integer types
-using u8 = uint8_t;
-using u16 = uint16_t;
-using u32 = uint32_t;
-using u64 = uint64_t;
+struct Camera {
+    transform::Transform projection;
+    transform::Transform view;
+};
 
-/// Signed integer types
-using s8 = int8_t;
-using s16 = int16_t;
-using s32 = int32_t;
-using s64 = int64_t;
+}// namespace rt
 
-/// Floating point types
-using f32 = float;
-using f64 = double;
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4324)
-#endif
-
-#endif// REALTIME_H
+#endif// REALTIME_CAMERA_H

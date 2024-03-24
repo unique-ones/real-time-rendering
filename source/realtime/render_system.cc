@@ -81,14 +81,17 @@ void RenderSystem::create_pipeline(VkRenderPass render_pass) {
 }
 
 /// Renders the entities
-void RenderSystem::render_entities(VkCommandBuffer command_buffer, std::vector<Entity> &entities) {
+void RenderSystem::render_entities(VkCommandBuffer command_buffer,
+                                   std::vector<Entity> &entities,
+                                   const Camera &camera,
+                                   f32 dt) {
     pipeline->bind(command_buffer);
-    for (auto &entity : entities) {
-        entity.transform.rotation.y = glm::mod(entity.transform.rotation.y + 0.01f, glm::two_pi<f32>());
-        entity.transform.rotation.x = glm::mod(entity.transform.rotation.x + 0.005f, glm::two_pi<f32>());
+    for (auto projection_view = camera.projection * camera.view; auto &entity : entities) {
+        entity.transform.rotation.y = glm::mod(entity.transform.rotation.y + 1.0f * dt, glm::two_pi<f32>());
+        entity.transform.rotation.x = glm::mod(entity.transform.rotation.x + 0.5f * dt, glm::two_pi<f32>());
 
         PushConstantData push{};
-        push.transform = entity.transform.transform();
+        push.transform = projection_view * entity.transform.transform();
         push.color = entity.color;
         vkCmdPushConstants(command_buffer, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                            0, sizeof push, &push);

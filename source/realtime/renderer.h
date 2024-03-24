@@ -53,6 +53,10 @@ public:
     /// @return The render pass of the swapchain
     VkRenderPass swapchain_render_pass() const;
 
+    /// Retrieves the swapchain aspect ratio
+    /// @return The swapchain aspect ratio
+    f32 aspect_ratio() const;
+
     /// Checks whether the frame is already in progress
     /// @return A value that indicates whether the frame is already in progress
     bool is_frame_in_progress() const;

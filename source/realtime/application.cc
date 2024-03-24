@@ -23,12 +23,6 @@
 
 #include <array>
 
-/// Force angles to be specified in radians
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-
 #include "application.h"
 #include "render_system.h"
 #include "utility.h"
@@ -115,12 +109,25 @@ Application::~Application() = default;
 /// Runs the application
 void Application::run() {
     RenderSystem render_system{ device, renderer.swapchain_render_pass() };
+    Camera camera{};
+    camera.view = transform::view_target(glm::vec3{ -1.0f, -2.0f, 2.0f }, glm::vec3{ 0.0f, 0.0f, 2.5f });
+
+    auto last_frame = static_cast<f32>(glfwGetTime());
 
     while (not window.should_close()) {
         glfwPollEvents();
+
+        auto aspect = renderer.aspect_ratio();
+        // camera.projection = transform::orthographic(-aspect, aspect, -1, 1, -1, 1);
+        camera.projection = transform::perspective(glm::radians(50.0f), aspect, 0.1f, 10.0f);
+
         if (auto command_buffer = renderer.begin_frame()) {
+            auto now = static_cast<f32>(glfwGetTime());
+            auto dt = now - last_frame;
+            last_frame = now;
+
             renderer.begin_swapchain_render_pass(command_buffer);
-            render_system.render_entities(command_buffer, entities);
+            render_system.render_entities(command_buffer, entities, camera, dt);
             renderer.end_swapchain_render_pass(command_buffer);
             renderer.end_frame();
         }
@@ -133,7 +140,7 @@ void Application::run() {
 void Application::load_entities() {
     auto &cube = entities.emplace_back(Entity::create());
     cube.model = std::move(create_cube_model(device, glm::vec3{ 0.0f }));
-    cube.transform.translation = { 0.0f, 0.0f, 0.5f };
+    cube.transform.translation = { 0.0f, 0.0f, 2.5f };
     cube.transform.scale = { 0.5f, 0.5f, 0.5f };
 }
 

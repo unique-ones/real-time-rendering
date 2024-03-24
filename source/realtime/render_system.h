@@ -27,6 +27,7 @@
 #include <memory>
 #include <vector>
 
+#include "camera.h"
 #include "device.h"
 #include "entity.h"
 #include "pipeline.h"
@@ -51,7 +52,10 @@ public:
 
     /// Renders the entities
     /// @param command_buffer The command buffer
-    void render_entities(VkCommandBuffer command_buffer, std::vector<Entity> &entities);
+    /// @param entities The entities to render
+    /// @param camera The camera
+    /// @param dt The delta time
+    void render_entities(VkCommandBuffer command_buffer, std::vector<Entity> &entities, const Camera &camera, f32 dt);
 
 private:
     /// Creates the layout of the pipeline

@@ -54,7 +54,7 @@ Type *value_or(Type *value, Type *alternative) {
 template<typename CharType = char, typename StringType = std::basic_string<CharType>>
 std::optional<StringType> read_file(const std::filesystem::path &path, std::ifstream::openmode flags = {}) {
     std::ifstream file(path, flags);
-    if  (not file.is_open()) {
+    if (not file.is_open()) {
         return std::nullopt;
     }
 
