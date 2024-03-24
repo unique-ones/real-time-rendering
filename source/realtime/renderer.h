@@ -78,11 +78,11 @@ public:
 
     /// Begins a new swapchain render pass
     /// @param command_buffer The recording command buffer
-    void begin_swapchain_render_pass(VkCommandBuffer command_buffer);
+    void begin_swapchain_render_pass(VkCommandBuffer command_buffer) const;
 
     /// Ends the previously started swapchain render pass
     /// @param command_buffer The recording command buffer
-    void end_swapchain_render_pass(VkCommandBuffer command_buffer);
+    void end_swapchain_render_pass(VkCommandBuffer command_buffer) const;
 
 private:
     /// Creates the command buffers

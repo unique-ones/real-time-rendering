@@ -118,7 +118,7 @@ void Renderer::end_frame() {
 }
 
 /// Begins a new swapchain render pass
-void Renderer::begin_swapchain_render_pass(VkCommandBuffer command_buffer) {
+void Renderer::begin_swapchain_render_pass(VkCommandBuffer command_buffer) const {
     assert(frame_started and "[renderer] Cannot call begin_swapchain_render_pass while frame is not in progress!");
     assert(command_buffer == current_command_buffer() and
            "[renderer] Cannot begin render pass on command buffer from a different frame!");
@@ -152,7 +152,7 @@ void Renderer::begin_swapchain_render_pass(VkCommandBuffer command_buffer) {
 }
 
 /// Ends the previously started swapchain render pass
-void Renderer::end_swapchain_render_pass(VkCommandBuffer command_buffer) {
+void Renderer::end_swapchain_render_pass(VkCommandBuffer command_buffer) const {
     assert(frame_started and "[renderer] Cannot call end_swapchain_render_pass while frame is not in progress!");
     assert(command_buffer == current_command_buffer() and
            "[renderer] Cannot end render pass on command buffer from a different frame!");

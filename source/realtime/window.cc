@@ -71,9 +71,14 @@ VkExtent2D Window::extent() const {
     return { static_cast<u32>(spec.width), static_cast<u32>(spec.height) };
 }
 
+/// Retrieves the GLFW native window handle
+GLFWwindow *Window::native_handle() const {
+    return window;
+}
+
 /// Callback for when the framebuffer resizes
 void Window::framebuffer_resize_callback(GLFWwindow *window, s32 width, s32 height) {
-    auto *win = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+    auto *win = static_cast<Window *>(glfwGetWindowUserPointer(window));
     win->framebuffer_resized = true;
     win->spec.width = width;
     win->spec.height = height;

@@ -54,8 +54,7 @@ public:
     /// @param command_buffer The command buffer
     /// @param entities The entities to render
     /// @param camera The camera
-    /// @param dt The delta time
-    void render_entities(VkCommandBuffer command_buffer, std::vector<Entity> &entities, const Camera &camera, f32 dt);
+    void render_entities(VkCommandBuffer command_buffer, std::vector<Entity> &entities, const Camera &camera) const;
 
 private:
     /// Creates the layout of the pipeline

@@ -81,6 +81,10 @@ public:
     /// @return The extent of the window
     VkExtent2D extent() const;
 
+    /// Retrieves the GLFW native window handle
+    /// @return The GLFW native window handle
+    GLFWwindow *native_handle() const;
+
 private:
     /// Callback for when the framebuffer resizes
     /// @param window The GLFW window handle

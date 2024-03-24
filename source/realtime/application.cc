@@ -22,8 +22,11 @@
 // SOFTWARE.
 
 #include <array>
+#include <chrono>
 
 #include "application.h"
+
+#include "input.h"
 #include "render_system.h"
 #include "utility.h"
 
@@ -108,26 +111,30 @@ Application::~Application() = default;
 
 /// Runs the application
 void Application::run() {
+    Input input{};
     RenderSystem render_system{ device, renderer.swapchain_render_pass() };
+
     Camera camera{};
     camera.view = transform::view_target(glm::vec3{ -1.0f, -2.0f, 2.0f }, glm::vec3{ 0.0f, 0.0f, 2.5f });
 
-    auto last_frame = static_cast<f32>(glfwGetTime());
+    auto viewer = Entity::create();
+    auto last_time = std::chrono::high_resolution_clock::now();
 
     while (not window.should_close()) {
         glfwPollEvents();
+        auto current_time = std::chrono::high_resolution_clock::now();
+        auto frame_time = std::chrono::duration<f32>(current_time - last_time).count();
+        last_time = current_time;
+
+        input.move_entity(window, frame_time, viewer);
+        camera.view = transform::view_euler(viewer.transform.translation, viewer.transform.rotation);
 
         auto aspect = renderer.aspect_ratio();
-        // camera.projection = transform::orthographic(-aspect, aspect, -1, 1, -1, 1);
         camera.projection = transform::perspective(glm::radians(50.0f), aspect, 0.1f, 10.0f);
 
         if (auto command_buffer = renderer.begin_frame()) {
-            auto now = static_cast<f32>(glfwGetTime());
-            auto dt = now - last_frame;
-            last_frame = now;
-
             renderer.begin_swapchain_render_pass(command_buffer);
-            render_system.render_entities(command_buffer, entities, camera, dt);
+            render_system.render_entities(command_buffer, entities, camera);
             renderer.end_swapchain_render_pass(command_buffer);
             renderer.end_frame();
         }

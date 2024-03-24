@@ -83,13 +83,9 @@ void RenderSystem::create_pipeline(VkRenderPass render_pass) {
 /// Renders the entities
 void RenderSystem::render_entities(VkCommandBuffer command_buffer,
                                    std::vector<Entity> &entities,
-                                   const Camera &camera,
-                                   f32 dt) {
+                                   const Camera &camera) const {
     pipeline->bind(command_buffer);
     for (auto projection_view = camera.projection * camera.view; auto &entity : entities) {
-        entity.transform.rotation.y = glm::mod(entity.transform.rotation.y + 1.0f * dt, glm::two_pi<f32>());
-        entity.transform.rotation.x = glm::mod(entity.transform.rotation.x + 0.5f * dt, glm::two_pi<f32>());
-
         PushConstantData push{};
         push.transform = projection_view * entity.transform.transform();
         push.color = entity.color;
