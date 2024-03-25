@@ -96,7 +96,7 @@ Swapchain::~Swapchain() {
         vkDestroySwapchainKHR(device.logical_device, swapchain, nullptr);
         swapchain = nullptr;
     }
-    for (s32 i = 0; i < depth_images.size(); ++i) {
+    for (decltype(depth_images)::size_type i = 0; i < depth_images.size(); ++i) {
         vkDestroyImageView(device.logical_device, depth_image_views[i], nullptr);
         vkDestroyImage(device.logical_device, depth_images[i], nullptr);
         vkFreeMemory(device.logical_device, depth_image_memorys[i], nullptr);
@@ -298,7 +298,7 @@ void Swapchain::create_depth_resources() {
     depth_image_memorys.resize(image_count());
     depth_image_views.resize(image_count());
 
-    for (s32 i = 0; i < depth_images.size(); ++i) {
+    for (decltype(depth_images)::size_type i = 0; i < depth_images.size(); ++i) {
         VkImageCreateInfo image_info{};
         image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         image_info.imageType = VK_IMAGE_TYPE_2D;

@@ -66,6 +66,8 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert"
 )
 
+file(MAKE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/shaders")
+
 foreach (GLSL ${GLSL_SOURCE_FILES})
     get_filename_component(FILE_NAME ${GLSL} NAME)
     set(SPIRV "${CMAKE_INSTALL_PREFIX}/shaders/${FILE_NAME}.spv")

@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 #include <array>
+#include <cstring>
 
 #include "model.h"
 
