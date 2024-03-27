@@ -39,7 +39,7 @@ FetchContent_MakeAvailable(glfw)
 # Declare realtime library
 add_library(realtime ${REALTIME_SOURCES} ${REALTIME_HEADERS})
 target_include_directories(realtime PUBLIC ${CMAKE_SOURCE_DIR}/extern/ ${CMAKE_CURRENT_SOURCE_DIR}/ ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(realtime PUBLIC ${Vulkan_LIBRARIES} glfw)
+target_link_libraries(realtime PUBLIC ${Vulkan_LIBRARIES} glfw realtime-extern)
 
 # Disable CRT warnings and enable highest warning level
 if (MSVC)
@@ -87,3 +87,6 @@ add_custom_target(
 add_executable(realtime-editor main.cc)
 target_link_libraries(realtime-editor PUBLIC realtime)
 add_dependencies(realtime-editor realtime-shaders)
+
+# Copy Assets to the Output Directory
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/assets DESTINATION ${CMAKE_INSTALL_PREFIX})

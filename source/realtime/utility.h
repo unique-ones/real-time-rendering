@@ -27,6 +27,7 @@
 #include <cstdarg>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -34,6 +35,8 @@
 #include "realtime.h"
 
 namespace rt {
+
+namespace fs = std::filesystem;
 
 /// Checks whether the provided value is a nullptr. If so, the alternative
 /// is returned.
@@ -46,13 +49,20 @@ Type *value_or(Type *value, Type *alternative) {
     return value ? value : alternative;
 }
 
+/// Combines an arbitrary number of hash values together
+template<typename T, typename... Rest>
+void hash_combine(std::size_t &seed, const T &v, const Rest &...rest) {
+    seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    (hash_combine(seed, rest), ...);
+}
+
 /// Reads the file from the specified path
 /// @param path The path to the file
 /// @param flags Optional flags for opening the file (std::ios::binary, ..)
 /// @return The content of the file, std::nullopt if the file does not
 ///         exist
 template<typename CharType = char, typename StringType = std::basic_string<CharType>>
-std::optional<StringType> read_file(const std::filesystem::path &path, std::ifstream::openmode flags = {}) {
+std::optional<StringType> read_file(const fs::path &path, std::ifstream::openmode flags = {}) {
     std::ifstream file(path, flags);
     if (not file.is_open()) {
         return std::nullopt;
@@ -66,6 +76,23 @@ std::optional<StringType> read_file(const std::filesystem::path &path, std::ifst
 /// @param code The error code
 /// @param message The message
 [[noreturn]] void error(s32 code, std::string_view message);
+
+template<typename T>
+std::partial_ordering order(const T &first, const T &second) {
+    if (first == second) {
+        return std::partial_ordering::equivalent;
+    }
+    return std::partial_ordering::unordered;
+}
+
+std::partial_ordering operator<=>(glm::vec1 first, glm::vec1 second);
+std::partial_ordering operator<=>(const glm::vec2 &first, const glm::vec2 &second);
+std::partial_ordering operator<=>(const glm::vec3 &first, const glm::vec3 &second);
+std::partial_ordering operator<=>(const glm::vec4 &first, const glm::vec4 &second);
+std::partial_ordering operator<=>(const glm::mat2 &first, const glm::mat2 &second);
+std::partial_ordering operator<=>(const glm::mat3 &first, const glm::mat3 &second);
+std::partial_ordering operator<=>(const glm::mat4 &first, const glm::mat4 &second);
+
 
 }// namespace rt
 

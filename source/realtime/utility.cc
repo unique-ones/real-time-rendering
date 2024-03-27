@@ -34,4 +34,32 @@ void error(s32 code, std::string_view message) {
     std::exit(code);
 }
 
+std::partial_ordering operator<=>(glm::vec1 first, glm::vec1 second) {
+    return order(first, second);
+}
+
+std::partial_ordering operator<=>(const glm::vec2 &first, const glm::vec2 &second) {
+    return order(first, second);
+}
+
+std::partial_ordering operator<=>(const glm::vec3 &first, const glm::vec3 &second) {
+    return order(first, second);
+}
+
+std::partial_ordering operator<=>(const glm::vec4 &first, const glm::vec4 &second) {
+    return order(first, second);
+}
+
+std::partial_ordering operator<=>(const glm::mat2 &first, const glm::mat2 &second) {
+    return order(first, second);
+}
+
+std::partial_ordering operator<=>(const glm::mat3 &first, const glm::mat3 &second) {
+    return order(first, second);
+}
+
+std::partial_ordering operator<=>(const glm::mat4 &first, const glm::mat4 &second) {
+    return order(first, second);
+}
+
 }// namespace rt

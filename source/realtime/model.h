@@ -29,7 +29,10 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
+#include <memory>
+
 #include "device.h"
+#include "utility.h"
 
 namespace rt {
 
@@ -38,6 +41,8 @@ public:
     struct Vertex {
         glm::vec3 position;
         glm::vec3 color;
+        glm::vec3 normal{};
+        glm::vec2 uv{};
 
         /// Retrieves the binding descriptions for a vertex
         /// @return The binding decriptions for a vertex
@@ -46,12 +51,26 @@ public:
         /// Retrieves the attribute descriptions for a vertex
         /// @return The attribute descriptions for a vertex
         static std::vector<VkVertexInputAttributeDescription> attribute_descriptions();
+
+        /// Checks whether to model vertices are equal
+        /// @param other The other vertex
+        /// @return Partial ordering
+        auto operator<=>(const Vertex &other) const = default;
+    };
+
+    struct Builder {
+        std::vector<Vertex> vertices{};
+        std::vector<u32> indices{};
+
+        /// Loads a model from the specified filesystem path
+        /// @param path The filesystem path of the model
+        void load_model(const fs::path &path);
     };
 
     /// Creates a new model
     /// @param device The device instance
-    /// @param vertices The vertices
-    explicit Model(Device &device, const std::vector<Vertex> &vertices);
+    /// @param builder A builder for the vertex data
+    explicit Model(Device &device, const Builder &builder);
 
     /// Destroys the data of the current model
     ~Model();
@@ -59,6 +78,12 @@ public:
     /// A model cannot be copied
     Model(const Model &) = delete;
     Model &operator=(const Model &) = delete;
+
+    /// Creates a model from the specified filesystem path
+    /// @param device The device instance
+    /// @param path The filesystem path of the model
+    /// @return A new model
+    static std::unique_ptr<Model> create_from_file(Device &device, const fs::path &path);
 
     /// Binds the current model using the specified command buffer
     /// @param command_buffer The recording command buffer
@@ -73,10 +98,20 @@ private:
     /// @param vertices The vertices
     void create_vertex_buffers(const std::vector<Vertex> &vertices);
 
+    /// Creates the index buffers for the current model
+    /// @param indices The indices
+    void create_index_buffers(const std::vector<u32> &indices);
+
     Device &device;
+
     VkBuffer vertex_buffer;
     VkDeviceMemory vertex_buffer_memory;
     u32 vertex_count;
+
+    bool has_index_buffer;
+    VkBuffer index_buffer;
+    VkDeviceMemory index_buffer_memory;
+    u32 index_count;
 };
 
 }// namespace rt
