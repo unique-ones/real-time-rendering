@@ -33,6 +33,8 @@ TransformComponent::TransformComponent() : translation{}, scale{ 1.0f }, rotatio
 /// Retrieves the transform of the component
 glm::mat4 TransformComponent::transform() const {
     auto t = glm::translate(glm::mat4{ 1.0f }, translation);
+
+    // TODO(elias): Optimize into combined YXZ rotation
     t = glm::rotate(t, rotation.y, { 0.0f, 1.0f, 0.0f });
     t = glm::rotate(t, rotation.x, { 1.0f, 0.0f, 0.0f });
     t = glm::rotate(t, rotation.z, { 0.0f, 0.0f, 1.0f });

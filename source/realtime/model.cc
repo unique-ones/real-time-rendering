@@ -36,8 +36,8 @@
 
 template<>
 struct std::hash<rt::Model::Vertex> {
-    std::size_t operator()(rt::Model::Vertex const &vertex) const noexcept {
-        std::size_t seed = 0;
+    usize operator()(rt::Model::Vertex const &vertex) const noexcept {
+        usize seed = 0;
         rt::hash_combine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
         return seed;
     }
