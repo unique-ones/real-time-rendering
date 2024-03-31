@@ -46,7 +46,7 @@ if (MSVC)
     target_compile_definitions(realtime PUBLIC _CRT_SECURE_NO_WARNINGS=1)
     target_compile_options(realtime PRIVATE /W4 /WX)
 else ()
-    target_compile_options(realtime PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-packed-bitfield-compat)
+    target_compile_options(realtime PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-gnu-anonymous-struct -Wno-nested-anon-types)
 endif ()
 
 # Find all vertex and fragment sources within shaders directory
@@ -90,3 +90,8 @@ add_dependencies(realtime-editor realtime-shaders)
 
 # Copy Assets to the Output Directory
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/assets DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+# Compile commands
+if(EXISTS "${CMAKE_INSTALL_PREFIX}/compile_commands.json")
+    file(CREATE_LINK "${CMAKE_INSTALL_PREFIX}/compile_commands.json" "${CMAKE_SOURCE_DIR}/compile_commands.json")
+endif()

@@ -94,7 +94,7 @@ void Model::Builder::load_model(const fs::path &path) {
                     attrib.vertices[3 * index.vertex_index + 2],
                 };
 
-                auto color_index = 3 * index.vertex_index + 2;
+                auto color_index = static_cast<usize>(3 * index.vertex_index + 2);
                 if (color_index < attrib.colors.size()) {
                     vertex.color = {
                         attrib.colors[color_index - 2],

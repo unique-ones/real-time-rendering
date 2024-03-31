@@ -80,7 +80,7 @@ void Application::run() {
 /// Loads the models
 void Application::load_entities() {
     auto &entity = entities.emplace_back(Entity::create());
-    entity.model = std::move(Model::create_from_file(device, "assets/smooth_vase.obj"));
+    entity.model = Model::create_from_file(device, "assets/smooth_vase.obj");
     entity.transform.translation = { 0.0f, 0.0f, 2.5f };
     entity.transform.scale = glm::vec3{ 3.0f };
 }
