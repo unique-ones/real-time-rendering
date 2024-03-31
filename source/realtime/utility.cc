@@ -27,11 +27,28 @@
 
 namespace rt {
 
+/// Tries to parse a unicode codepoint from a given string view
+std::optional<u32> codepoint_from_view(std::string_view view) {
+    u32 result{};
+    if (std::from_chars(view.data(), view.data() + view.size(), result, 16).ec == std::errc{}) {
+        return result;
+    }
+    return std::nullopt;
+}
+
 /// Print out an error message to the console and exit the application
 /// with the specified error code
 void error(s32 code, std::string_view message) {
     std::printf("[error] %.*s", static_cast<int>(message.size()), message.data());
     std::exit(code);
+}
+
+template<typename T>
+std::partial_ordering order(const T &first, const T &second) {
+    if (first == second) {
+        return std::partial_ordering::equivalent;
+    }
+    return std::partial_ordering::unordered;
 }
 
 std::partial_ordering operator<=>(glm::vec1 first, glm::vec1 second) {

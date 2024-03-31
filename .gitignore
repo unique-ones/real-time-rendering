@@ -4,6 +4,7 @@
 # Custom entries
 /build
 /.idea
+/.cache
 
 ### C++ ###
 # Prerequisites

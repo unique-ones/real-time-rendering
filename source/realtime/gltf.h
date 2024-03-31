@@ -21,37 +21,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REALTIME_H
-#define REALTIME_H
+#include "utility.h"
 
-#include <cassert>
-#include <cstdint>
+namespace rt {
 
-/// Force angles to be specified in radians
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
+struct GlbFile {
+    struct Header {
+        u32 magic;
+        u32 version;
+        u32 length;
+    };
 
-/// Unsigned integer types
-using u8 = uint8_t;
-using u16 = uint16_t;
-using u32 = uint32_t;
-using u64 = uint64_t;
-using usize = size_t;
+    struct Chunk {
+        enum class Type : u32 {
+            JSON = 0x4E4F534A,
+            BINARY = 0x004E4942
+        };
 
-/// Signed integer types
-using s8 = int8_t;
-using s16 = int16_t;
-using s32 = int32_t;
-using s64 = int64_t;
+        struct Info {
+            u32 length;
+            Type type;
+        };
+    };
 
-/// Floating point types
-using f32 = float;
-using f64 = double;
+    Header header;
+    std::vector<Chunk> chunks;
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4324)
-#endif
+    /// Tries to read a GLB file from disk
+    /// @param path The path of the GLB file
+    /// @return An optional GLB file
+    static std::optional<GlbFile> read(const fs::path &path);
+};
 
-#endif// REALTIME_H
+}// namespace rt
