@@ -22,7 +22,6 @@
 // SOFTWARE.
 
 #include <realtime/application.h>
-#include <realtime/gltf.h>
 
 int main(int argc, char **argv) {
     auto application = rt::Application{ { .name = "Real Time Rendering" } };

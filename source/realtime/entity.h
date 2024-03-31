@@ -42,6 +42,10 @@ struct TransformComponent {
     /// Note that the rotation convention uses tait-bryan angles with axis order Y(1), X(2) and Z(3)
     /// @return The transform
     glm::mat4 transform() const;
+
+    /// Calculates the normal matrix
+    /// @return The normal matrix
+    glm::mat4 normal() const;
 };
 
 class Entity {

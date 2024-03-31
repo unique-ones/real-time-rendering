@@ -24,6 +24,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "entity.h"
+#include "realtime/entity.h"
 
 namespace rt {
 
@@ -39,6 +40,15 @@ glm::mat4 TransformComponent::transform() const {
     t = glm::rotate(t, rotation.x, { 1.0f, 0.0f, 0.0f });
     t = glm::rotate(t, rotation.z, { 0.0f, 0.0f, 1.0f });
     t = glm::scale(t, scale);
+    return t;
+}
+
+/// Calculates the normal matrix
+glm::mat4 TransformComponent::normal() const {
+    auto t = glm::rotate(glm::mat4{ 1.0f }, rotation.y, { 0.0f, 1.0f, 0.0f });
+    t = glm::rotate(t, rotation.x, { 1.0f, 0.0f, 0.0f });
+    t = glm::rotate(t, rotation.z, { 0.0f, 0.0f, 1.0f });
+    t = glm::scale(t, 1.0f / scale);
     return t;
 }
 

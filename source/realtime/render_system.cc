@@ -36,7 +36,7 @@ namespace rt {
 
 struct PushConstantData {
     glm::mat4 transform{ 1.0f };
-    alignas(16) glm::vec3 color;
+    glm::mat4 normal{ 1.0f };
 };
 
 /// Creates a realtime render system
@@ -88,7 +88,7 @@ void RenderSystem::render_entities(VkCommandBuffer command_buffer,
     for (auto projection_view = camera.projection * camera.view; auto &entity : entities) {
         PushConstantData push{};
         push.transform = projection_view * entity.transform.transform();
-        push.color = entity.color;
+        push.normal = entity.transform.normal();
         vkCmdPushConstants(command_buffer, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                            0, sizeof push, &push);
         entity.model->bind(command_buffer);

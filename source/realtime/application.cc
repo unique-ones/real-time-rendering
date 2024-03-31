@@ -80,9 +80,9 @@ void Application::run() {
 /// Loads the models
 void Application::load_entities() {
     auto &entity = entities.emplace_back(Entity::create());
-    entity.model = Model::create_from_file(device, "assets/smooth_vase.obj");
-    entity.transform.translation = { 0.0f, 0.0f, 2.5f };
-    entity.transform.scale = glm::vec3{ 3.0f };
+    entity.model = Model::create_from_file(device, "assets/flat_vase.obj");
+    entity.transform.translation = { 0.0f, 0.5f, 2.5f };
+    entity.transform.scale = { 3.0f, 1.5f, 3.0f };
 }
 
 }// namespace rt

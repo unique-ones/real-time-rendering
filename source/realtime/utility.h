@@ -34,6 +34,7 @@
 #include <type_traits>
 
 #include "realtime.h"
+#include "realtime/utility.h"
 
 namespace rt {
 
@@ -100,6 +101,8 @@ std::optional<u32> codepoint_from_view(std::string_view view);
 /// @param message The message
 [[noreturn]] void error(s32 code, std::string_view message);
 
+namespace meta {
+
 template<typename T, typename... Args>
 struct is_same_as_any;
 
@@ -115,6 +118,8 @@ struct is_same_as_any<T, First, Rest...>
 /// @tparam Args The list of candidates
 template<typename T, typename... Args>
 inline constexpr bool is_same_as_any_v = is_same_as_any<T, Args...>::value;
+
+}// namespace meta
 
 std::partial_ordering operator<=>(glm::vec1 first, glm::vec1 second);
 std::partial_ordering operator<=>(const glm::vec2 &first, const glm::vec2 &second);

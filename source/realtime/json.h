@@ -184,7 +184,7 @@ public:
     /// @return An optional reference to the value
     template<typename T>
     T *as() {
-        static_assert(is_same_as_any_v<T, String, Number, Bool, Null, Json, Array>,
+        static_assert(meta::is_same_as_any_v<T, String, Number, Bool, Null, Json, Array>,
                       "Invalid value type! Must be either String, Number, Bool, Null, Json or Array!");
         return std::get_if<T>(&value);
     }
