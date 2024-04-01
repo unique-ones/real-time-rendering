@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -120,25 +120,16 @@ void Model::Builder::load_model(const fs::path &path) {
 Model::Model(Device &device, const Builder &builder)
     : device{ device },
       vertex_buffer{},
-      vertex_buffer_memory{},
       vertex_count{},
       has_index_buffer{ false },
       index_buffer{},
-      index_buffer_memory{},
       index_count{} {
     create_vertex_buffers(builder.vertices);
     create_index_buffers(builder.indices);
 }
 
 /// Destroys the data of the current model
-Model::~Model() {
-    vkDestroyBuffer(device.logical_device, vertex_buffer, nullptr);
-    vkFreeMemory(device.logical_device, vertex_buffer_memory, nullptr);
-    if (has_index_buffer) {
-        vkDestroyBuffer(device.logical_device, index_buffer, nullptr);
-        vkFreeMemory(device.logical_device, index_buffer_memory, nullptr);
-    }
-}
+Model::~Model() { }
 
 /// Creates a model from the specified filesystem path
 std::unique_ptr<Model> Model::create_from_file(Device &device, const fs::path &path) {
@@ -150,9 +141,9 @@ std::unique_ptr<Model> Model::create_from_file(Device &device, const fs::path &p
 /// Binds the current model using the specified command buffer
 void Model::bind(VkCommandBuffer command_buffer) const {
     std::array<VkDeviceSize, 1> offsets = { 0 };
-    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer, offsets.data());
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer->buffer, offsets.data());
     if (has_index_buffer) {
-        vkCmdBindIndexBuffer(command_buffer, index_buffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(command_buffer, index_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);
     }
 }
 
@@ -170,24 +161,19 @@ void Model::create_vertex_buffers(const std::vector<Vertex> &vertices) {
     assert(vertex_count >= 3 and "[model] Vertex count must be at least 3!");
 
     auto buffer_size = sizeof(Vertex) * vertex_count;
+    auto vertex_size = sizeof(Vertex);
 
-    VkBuffer staging_buffer;
-    VkDeviceMemory staging_buffer_memory;
-    device.create_buffer(buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer,
-                         staging_buffer_memory);
+    Buffer staging_buffer{ device, vertex_size, vertex_count, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
 
-    void *data = nullptr;
-    vkMapMemory(device.logical_device, staging_buffer_memory, 0, buffer_size, 0, &data);
-    std::memcpy(data, vertices.data(), buffer_size);
-    vkUnmapMemory(device.logical_device, staging_buffer_memory);
+    staging_buffer.map();
+    staging_buffer.write((void *) vertices.data());
 
-    device.create_buffer(buffer_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertex_buffer, vertex_buffer_memory);
-    device.copy_buffer(staging_buffer, vertex_buffer, buffer_size);
+    vertex_buffer = std::make_unique<Buffer>(device, vertex_size, vertex_count,
+                                             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    vkDestroyBuffer(device.logical_device, staging_buffer, nullptr);
-    vkFreeMemory(device.logical_device, staging_buffer_memory, nullptr);
+    device.copy_buffer(staging_buffer.buffer, vertex_buffer->buffer, buffer_size);
 }
 
 /// Creates the index buffers for the current model
@@ -199,24 +185,19 @@ void Model::create_index_buffers(const std::vector<u32> &indices) {
     }
 
     auto buffer_size = sizeof(u32) * index_count;
+    auto index_size = sizeof(u32);
 
-    VkBuffer staging_buffer;
-    VkDeviceMemory staging_buffer_memory;
-    device.create_buffer(buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, staging_buffer,
-                         staging_buffer_memory);
+    Buffer staging_buffer{ device, index_size, index_count, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT };
 
-    void *data = nullptr;
-    vkMapMemory(device.logical_device, staging_buffer_memory, 0, buffer_size, 0, &data);
-    std::memcpy(data, indices.data(), buffer_size);
-    vkUnmapMemory(device.logical_device, staging_buffer_memory);
+    staging_buffer.map();
+    staging_buffer.write((void *) indices.data());
 
-    device.create_buffer(buffer_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, index_buffer, index_buffer_memory);
-    device.copy_buffer(staging_buffer, index_buffer, buffer_size);
+    index_buffer = std::make_unique<Buffer>(device, index_size, index_count,
+                                            VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    vkDestroyBuffer(device.logical_device, staging_buffer, nullptr);
-    vkFreeMemory(device.logical_device, staging_buffer_memory, nullptr);
+    device.copy_buffer(staging_buffer.buffer, index_buffer->buffer, buffer_size);
 }
 
 }// namespace rt

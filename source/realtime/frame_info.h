@@ -21,19 +21,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REALTIME_CAMERA_H
-#define REALTIME_CAMERA_H
+#ifndef REALTIME_FRAME_INFO_H
+#define REALTIME_FRAME_INFO_H
 
-#include "realtime.h"
-#include "transform.h"
+#include "camera.h"
+
+#include <vulkan/vulkan.h>
 
 namespace rt {
 
-struct Camera {
-    transform::Transform projection;
-    transform::Transform view;
+struct FrameInfo {
+    u32 frame_index;
+    f32 frame_time;
+    VkCommandBuffer command_buffer;
+    Camera &camera;
 };
 
 }// namespace rt
 
-#endif// REALTIME_CAMERA_H
+#endif// REALTIME_FRAME_INFO_H

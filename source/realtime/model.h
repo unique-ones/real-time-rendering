@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,10 @@
 
 #include <memory>
 
+#include "buffer.h"
 #include "device.h"
 #include "utility.h"
+
 
 namespace rt {
 
@@ -104,13 +106,11 @@ private:
 
     Device &device;
 
-    VkBuffer vertex_buffer;
-    VkDeviceMemory vertex_buffer_memory;
+    std::unique_ptr<Buffer> vertex_buffer;
     u32 vertex_count;
 
     bool has_index_buffer;
-    VkBuffer index_buffer;
-    VkDeviceMemory index_buffer_memory;
+    std::unique_ptr<Buffer> index_buffer;
     u32 index_count;
 };
 

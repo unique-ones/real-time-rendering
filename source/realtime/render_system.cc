@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -81,18 +81,16 @@ void RenderSystem::create_pipeline(VkRenderPass render_pass) {
 }
 
 /// Renders the entities
-void RenderSystem::render_entities(VkCommandBuffer command_buffer,
-                                   std::vector<Entity> &entities,
-                                   const Camera &camera) const {
-    pipeline->bind(command_buffer);
-    for (auto projection_view = camera.projection * camera.view; auto &entity : entities) {
+void RenderSystem::render_entities(const FrameInfo &info, std::vector<Entity> &entities) const {
+    pipeline->bind(info.command_buffer);
+    for (auto projection_view = info.camera.projection * info.camera.view; auto &entity : entities) {
         PushConstantData push{};
         push.transform = projection_view * entity.transform.transform();
         push.normal = entity.transform.normal();
-        vkCmdPushConstants(command_buffer, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                           0, sizeof push, &push);
-        entity.model->bind(command_buffer);
-        entity.model->draw(command_buffer);
+        vkCmdPushConstants(info.command_buffer, pipeline_layout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof push, &push);
+        entity.model->bind(info.command_buffer);
+        entity.model->draw(info.command_buffer);
     }
 }
 

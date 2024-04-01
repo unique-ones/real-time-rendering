@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,20 @@
 #include <chrono>
 
 #include "application.h"
-
+#include "buffer.h"
+#include "glm/geometric.hpp"
 #include "input.h"
+#include "realtime/frame_info.h"
 #include "render_system.h"
 #include "utility.h"
+#include "vulkan/vulkan_core.h"
 
 namespace rt {
+
+struct UniformBuffer {
+    glm::mat4 projection_view{ 1.0f };
+    glm::vec3 light_direction = glm::normalize(glm::vec3{ 1.0f, -3.0f, -1.0f });
+};
 
 /// Creates a realtime application
 Application::Application(Specification specification)
@@ -45,6 +53,14 @@ Application::~Application() = default;
 
 /// Runs the application
 void Application::run() {
+    Buffer uniform_buffer{ device,
+                           sizeof(UniformBuffer),
+                           Swapchain::MAX_FRAMES_IN_FLIGHT,
+                           VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                           device.physical_device_properties.limits.minUniformBufferOffsetAlignment };
+    uniform_buffer.map();
+
     Input input{};
     RenderSystem render_system{ device, renderer.swapchain_render_pass() };
 
@@ -67,8 +83,18 @@ void Application::run() {
         camera.projection = transform::perspective(glm::radians(50.0f), aspect, 0.1f, 10.0f);
 
         if (auto command_buffer = renderer.begin_frame()) {
+            auto frame_index = renderer.frame_index();
+            FrameInfo info{ frame_index, frame_time, command_buffer, camera };
+
+            // Update
+            UniformBuffer ubo{};
+            ubo.projection_view = camera.projection * camera.view;
+            uniform_buffer.write(&ubo, frame_index);
+            uniform_buffer.flush(frame_index);
+
+            // Render
             renderer.begin_swapchain_render_pass(command_buffer);
-            render_system.render_entities(command_buffer, entities, camera);
+            render_system.render_entities(info, entities);
             renderer.end_swapchain_render_pass(command_buffer);
             renderer.end_frame();
         }
@@ -80,7 +106,7 @@ void Application::run() {
 /// Loads the models
 void Application::load_entities() {
     auto &entity = entities.emplace_back(Entity::create());
-    entity.model = Model::create_from_file(device, "assets/flat_vase.obj");
+    entity.model = Model::create_from_file(device, "assets/colored_cube.obj");
     entity.transform.translation = { 0.0f, 0.5f, 2.5f };
     entity.transform.scale = { 3.0f, 1.5f, 3.0f };
 }

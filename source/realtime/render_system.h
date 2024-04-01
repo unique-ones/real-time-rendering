@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2023 Elias Engelbert Plank
+// Copyright (c) 2024 Elias Engelbert Plank
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,9 @@
 #include "camera.h"
 #include "device.h"
 #include "entity.h"
+#include "frame_info.h"
 #include "pipeline.h"
+
 
 namespace rt {
 
@@ -51,10 +53,9 @@ public:
     RenderSystem &operator=(RenderSystem &&) = delete;
 
     /// Renders the entities
-    /// @param command_buffer The command buffer
+    /// @param info The frame info
     /// @param entities The entities to render
-    /// @param camera The camera
-    void render_entities(VkCommandBuffer command_buffer, std::vector<Entity> &entities, const Camera &camera) const;
+    void render_entities(const FrameInfo &info, std::vector<Entity> &entities) const;
 
 private:
     /// Creates the layout of the pipeline
