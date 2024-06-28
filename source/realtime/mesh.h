@@ -21,8 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REALTIME_MODEL_H
-#define REALTIME_MODEL_H
+#ifndef REALTIME_mesh_H
+#define REALTIME_mesh_H
 
 /// Force angles to be specified in radians
 #define GLM_FORCE_RADIANS
@@ -38,7 +38,7 @@
 
 namespace rt {
 
-class Model {
+class Mesh {
 public:
     struct Vertex {
         glm::vec3 position;
@@ -54,7 +54,7 @@ public:
         /// @return The attribute descriptions for a vertex
         static std::vector<VkVertexInputAttributeDescription> attribute_descriptions();
 
-        /// Checks whether to model vertices are equal
+        /// Checks whether to mesh vertices are equal
         /// @param other The other vertex
         /// @return Partial ordering
         auto operator<=>(const Vertex &other) const = default;
@@ -64,45 +64,53 @@ public:
         std::vector<Vertex> vertices{};
         std::vector<u32> indices{};
 
-        /// Loads a model from the specified filesystem path
-        /// @param path The filesystem path of the model
-        void load_model(const fs::path &path);
+        /// Loads a wavefront mesh from the specified filesystem path
+        /// @param path The filesystem path of the mesh
+        void from_wavefront(const fs::path &path);
     };
 
-    /// Creates a new model
+
+    /// The centroid of the mesh
+    glm::vec3 centroid;
+
+    /// Creates a new mesh
     /// @param device The device instance
     /// @param builder A builder for the vertex data
-    explicit Model(Device &device, const Builder &builder);
+    explicit Mesh(Device &device, const Builder &builder);
 
-    /// Destroys the data of the current model
-    ~Model();
+    /// Destroys the data of the current mesh
+    ~Mesh();
 
-    /// A model cannot be copied
-    Model(const Model &) = delete;
-    Model &operator=(const Model &) = delete;
+    /// A mesh cannot be copied
+    Mesh(const Mesh &) = delete;
+    Mesh &operator=(const Mesh &) = delete;
 
-    /// Creates a model from the specified filesystem path
+    /// Creates a mesh from the specified filesystem path
     /// @param device The device instance
-    /// @param path The filesystem path of the model
-    /// @return A new model
-    static std::unique_ptr<Model> create_from_file(Device &device, const fs::path &path);
+    /// @param path The filesystem path of the mesh
+    /// @return A new mesh
+    static std::unique_ptr<Mesh> from_wavefront(Device &device, const fs::path &path);
 
-    /// Binds the current model using the specified command buffer
+    /// Binds the current mesh using the specified command buffer
     /// @param command_buffer The recording command buffer
     void bind(VkCommandBuffer command_buffer) const;
 
-    /// Draws the model using the specified command buffer
+    /// Draws the mesh using the specified command buffer
     /// @param command_buffer The recording command buffer
     void draw(VkCommandBuffer command_buffer) const;
 
 private:
-    /// Creates the vertex buffers for the current model
+    /// Creates the vertex buffers for the current mesh
     /// @param vertices The vertices
     void create_vertex_buffers(const std::vector<Vertex> &vertices);
 
-    /// Creates the index buffers for the current model
+    /// Creates the index buffers for the current mesh
     /// @param indices The indices
     void create_index_buffers(const std::vector<u32> &indices);
+
+    /// Computes the centroid of the current mesh
+    /// @param vertices The vertices
+    void compute_centroid(const std::vector<Vertex> &vertices);
 
     Device &device;
 
@@ -116,4 +124,4 @@ private:
 
 }// namespace rt
 
-#endif// REALTIME_MODEL_H
+#endif// REALTIME_mesh_H

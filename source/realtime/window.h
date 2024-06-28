@@ -27,9 +27,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <csetjmp>
 #include <string>
 
+#include "event.h"
 #include "realtime.h"
 
 namespace rt {
@@ -85,12 +85,32 @@ public:
     /// @return The GLFW native window handle
     GLFWwindow *native_handle() const;
 
+    /// Registers an event listener
+    /// @param listener The event listener
+    void register_listener(const EventListener &listener);
+
 private:
     /// Callback for when the framebuffer resizes
     /// @param window The GLFW window handle
     /// @param width The new width of the framebuffer
     /// @param height The new height of the framebuffer
     static void framebuffer_resize_callback(GLFWwindow *window, s32 width, s32 height);
+
+    /// Callback for when the mouse scrolls
+    /// @param window The GLFW window handle
+    /// @param x The scroll in the x direction
+    /// @param y The scroll in the y direction
+    static void scroll_callback(GLFWwindow *window, f64 x, f64 y);
+
+    /// Callback for when the cursor moves
+    /// @param window The GLFW window handle
+    /// @param x The movement in the x direction
+    /// @param y The movement in the y direction
+    static void cursor_callback(GLFWwindow *window, f64 x, f64 y);
+
+    /// Dispatches an event to all listeners
+    /// @param event The event
+    void dispatch(const Event &event);
 
     /// Our list of friends :)
     friend class Device;
@@ -99,6 +119,7 @@ private:
     bool framebuffer_resized;
     Specification spec;
     GLFWwindow *window;
+    std::vector<EventListener> listeners;
 };
 
 }// namespace rt

@@ -168,9 +168,10 @@ private:
     friend class Pipeline;
     friend class Swapchain;
     friend class Application;
-    friend class Model;
+    friend class Mesh;
     friend class Renderer;
     friend class RenderSystem;
+    friend class GridSystem;
     friend struct Buffer;
 
     Window &window;

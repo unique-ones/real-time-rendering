@@ -37,6 +37,8 @@ Window::Window(Specification specification) : framebuffer_resized(false), spec(s
     window = glfwCreateWindow(spec.width, spec.height, spec.name.c_str(), nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebuffer_resize_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetCursorPosCallback(window, cursor_callback);
 }
 
 /// Destroys the window and its draw surface
@@ -83,5 +85,33 @@ void Window::framebuffer_resize_callback(GLFWwindow *window, s32 width, s32 heig
     win->spec.width = width;
     win->spec.height = height;
 }
+
+/// Callback for when the mouse scrolls
+void Window::scroll_callback(GLFWwindow *window, f64 x, f64 y) {
+    auto *win = static_cast<Window *>(glfwGetWindowUserPointer(window));
+    auto scroll = ScrollEvent{ x, y };
+    win->dispatch(scroll);
+}
+
+/// Callback for when the cursor moves
+void Window::cursor_callback(GLFWwindow *window, f64 x, f64 y) {
+    auto *win = static_cast<Window *>(glfwGetWindowUserPointer(window));
+    auto cursor = CursorEvent{ x, y };
+    win->dispatch(cursor);
+}
+
+void Window::dispatch(const Event &event) {
+    for (auto &listener : listeners) {
+        if (event.type() == listener.type) {
+            listener.handler(event);
+        }
+    }
+}
+
+/// Registers an event listener
+void Window::register_listener(const EventListener &listener) {
+    listeners.push_back(listener);
+}
+
 
 }// namespace rt

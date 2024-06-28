@@ -64,6 +64,6 @@ Entity::identifier_type Entity::identifier() const {
 }
 
 /// Creates a new entity
-Entity::Entity(identifier_type id) : id{ id } { }
+Entity::Entity(identifier_type id) : color{}, id{ id } { }
 
 }// namespace rt

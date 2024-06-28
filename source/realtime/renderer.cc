@@ -118,7 +118,7 @@ void Renderer::end_frame() {
 }
 
 /// Begins a new swapchain render pass
-void Renderer::begin_swapchain_render_pass(VkCommandBuffer command_buffer) const {
+void Renderer::begin_swapchain_render_pass(VkCommandBuffer command_buffer, const glm::vec4 &clear_color) const {
     assert(frame_started and "[renderer] Cannot call begin_swapchain_render_pass while frame is not in progress!");
     assert(command_buffer == current_command_buffer() and
            "[renderer] Cannot begin render pass on command buffer from a different frame!");
@@ -131,7 +131,7 @@ void Renderer::begin_swapchain_render_pass(VkCommandBuffer command_buffer) const
     render_pass_info.renderArea.extent = swapchain->swapchain_extent;
 
     std::array<VkClearValue, 2> clear_values{};
-    clear_values[0].color = { { 0.01f, 0.01f, 0.01f, 1.0f } };
+    clear_values[0].color = { { clear_color.r, clear_color.g, clear_color.b, clear_color.a } };
     clear_values[1].depthStencil = { 1.0f, 0 };
     render_pass_info.clearValueCount = static_cast<u32>(clear_values.size());
     render_pass_info.pClearValues = clear_values.data();

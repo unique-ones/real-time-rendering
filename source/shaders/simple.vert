@@ -7,13 +7,13 @@ layout (location = 3) in vec2 attrib_uv;
 layout (location = 0) out vec3 passed_color;
 
 layout (push_constant) uniform Push {
-    // projection * view * model
-    mat4 transform; 
+    // projection * view * mesh
+    mat4 transform;
     mat4 normal;
 } push;
 
 const vec3 DIRECTION_TO_LIGHT = normalize(vec3(1.0, -3.0, -1.0));
-const float AMBIENT_COLOR = 0.02f;
+const float AMBIENT_COLOR = 0.2f;
 
 void main() {
     gl_Position = push.transform * vec4(attrib_position, 1.0);

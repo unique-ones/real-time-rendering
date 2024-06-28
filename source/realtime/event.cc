@@ -21,41 +21,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REALTIME_CAMERA_H
-#define REALTIME_CAMERA_H
-
-#include "realtime.h"
-#include "window.h"
+#include "event.h"
 
 namespace rt {
 
-struct Camera {
-    Window &window;
-    f32 azimuth;
-    f32 declination;
-    f32 distance;
-    glm::vec3 target;
-    glm::mat4 projection;
-    glm::mat4 view;
+/// Creates a new scroll event
+ScrollEvent::ScrollEvent(f64 x, f64 y) : x{ x }, y{ y } { }
 
-    // Movement state
-    bool clicked{};
-    glm::vec2 cursor_start{};
-    glm::vec2 cursor_current{};
+/// Retrieves the type of the event
+EventType ScrollEvent::type() const {
+    return EventType::Scroll;
+}
 
-    /// Creates a new orbital camera
-    /// @param position The initial position of the camera
-    /// @param target The target of the camera
-    explicit Camera(Window &window, const glm::vec3 &target = { 0, 0, 0 });
+/// Creates a new cursore event
+CursorEvent::CursorEvent(f64 x, f64 y) : x{ x }, y{ y } { }
 
-    /// Updates the camera
-    /// @param aspect The aspect ratio
-    void update(f32 aspect);
-
-    /// Calculates the projection view matrix
-    glm::mat4 projection_view() const;
-};
-
+/// Retrieves the type of the event
+EventType CursorEvent::type() const {
+    return EventType::Cursor;
+}
 }// namespace rt
-
-#endif// REALTIME_CAMERA_H

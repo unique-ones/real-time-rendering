@@ -27,13 +27,26 @@
 #include "application.h"
 #include "buffer.h"
 #include "glm/geometric.hpp"
+#include "grid_system.h"
 #include "input.h"
 #include "realtime/frame_info.h"
 #include "render_system.h"
 #include "utility.h"
-#include "vulkan/vulkan_core.h"
 
 namespace rt {
+
+namespace {
+
+/// Computes the centroid of all entities
+glm::vec3 compute_centroid(const std::vector<Entity> &entities) {
+    auto result = glm::vec3{ 0.0f };
+    for (const auto &entity : entities) {
+        result += entity.mesh->centroid;
+    }
+    return result / static_cast<f32>(entities.size());
+}
+
+}// namespace
 
 struct UniformBuffer {
     glm::mat4 projection_view{ 1.0f };
@@ -60,40 +73,31 @@ void Application::run() {
                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                            device.physical_device_properties.limits.minUniformBufferOffsetAlignment };
     uniform_buffer.map();
-
-    Input input{};
     RenderSystem render_system{ device, renderer.swapchain_render_pass() };
 
-    Camera camera{};
-    camera.view = transform::view_target(glm::vec3{ -1.0f, -2.0f, 2.0f }, glm::vec3{ 0.0f, 0.0f, 2.5f });
+    auto centroid = compute_centroid(entities);
+    Camera camera{ window, centroid };
 
-    auto viewer = Entity::create();
     auto last_time = std::chrono::high_resolution_clock::now();
-
     while (not window.should_close()) {
         glfwPollEvents();
         auto current_time = std::chrono::high_resolution_clock::now();
         auto frame_time = std::chrono::duration<f32>(current_time - last_time).count();
         last_time = current_time;
 
-        input.move_entity(window, frame_time, viewer);
-        camera.view = transform::view_euler(viewer.transform.translation, viewer.transform.rotation);
-
-        auto aspect = renderer.aspect_ratio();
-        camera.projection = transform::perspective(glm::radians(50.0f), aspect, 0.1f, 10.0f);
-
+        camera.update(renderer.aspect_ratio());
         if (auto command_buffer = renderer.begin_frame()) {
             auto frame_index = renderer.frame_index();
             FrameInfo info{ frame_index, frame_time, command_buffer, camera };
 
             // Update
             UniformBuffer ubo{};
-            ubo.projection_view = camera.projection * camera.view;
-            uniform_buffer.write(&ubo, frame_index);
-            uniform_buffer.flush(frame_index);
+            ubo.projection_view = camera.projection_view();
+            uniform_buffer.write(&ubo, static_cast<s32>(frame_index));
+            uniform_buffer.flush(static_cast<s32>(frame_index));
 
             // Render
-            renderer.begin_swapchain_render_pass(command_buffer);
+            renderer.begin_swapchain_render_pass(command_buffer, { 0.48f, 0.65f, 1.0f, 1.0f });
             render_system.render_entities(info, entities);
             renderer.end_swapchain_render_pass(command_buffer);
             renderer.end_frame();
@@ -103,12 +107,12 @@ void Application::run() {
     vkDeviceWaitIdle(device.logical_device);
 }
 
-/// Loads the models
+/// Loads the meshes
 void Application::load_entities() {
     auto &entity = entities.emplace_back(Entity::create());
-    entity.model = Model::create_from_file(device, "assets/colored_cube.obj");
-    entity.transform.translation = { 0.0f, 0.5f, 2.5f };
-    entity.transform.scale = { 3.0f, 1.5f, 3.0f };
+    entity.mesh = Mesh::from_wavefront(device, "assets/stanford-dragon-10k.obj");
+    entity.transform.scale = glm::vec3{ 1.0f };
+    entity.transform.rotation = { glm::pi<f32>(), 0.0f, 0.0f };
 }
 
 }// namespace rt

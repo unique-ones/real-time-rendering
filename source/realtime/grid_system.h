@@ -21,46 +21,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REALTIME_RENDER_SYSTEM_H
-#define REALTIME_RENDER_SYSTEM_H
+#ifndef REALTIME_GRID_SYSTEM_H
+#define REALTIME_GRID_SYSTEM_H
 
 #include <memory>
-#include <vector>
-
-#include "camera.h"
 #include "device.h"
-#include "entity.h"
-#include "frame_info.h"
 #include "pipeline.h"
-
+#include "frame_info.h"
 
 namespace rt {
 
-struct PushConstantData {
-    glm::mat4 transform{ 1.0f };
-    glm::mat4 normal{ 1.0f };
-};
-
-class RenderSystem {
+class GridSystem {
 public:
-    /// Creates a realtime render system
+    /// Creates a realtime grid system
     /// @param device The device
     /// @param render_pass The render pass
-    explicit RenderSystem(Device &device, VkRenderPass render_pass);
+    explicit GridSystem(Device &device, VkRenderPass render_pass);
 
-    /// Destroys all render system objects
-    ~RenderSystem();
+    /// Destroys all grid system objects
+    ~GridSystem();
 
-    /// A render system cannot be copied or moved
-    RenderSystem(const RenderSystem &) = delete;
-    RenderSystem &operator=(const RenderSystem &) = delete;
-    RenderSystem(RenderSystem &&) = delete;
-    RenderSystem &operator=(RenderSystem &&) = delete;
+    /// A grid system cannot be copied or moved
+    GridSystem(const GridSystem &) = delete;
+    GridSystem &operator=(const GridSystem &) = delete;
+    GridSystem(GridSystem &&) = delete;
+    GridSystem &operator=(GridSystem &&) = delete;
 
-    /// Renders the entities
+    /// Renders the grid
     /// @param info The frame info
-    /// @param entities The entities to render
-    void render_entities(const FrameInfo &info, std::vector<Entity> &entities) const;
+    /// @param size The grid size
+    void render(const FrameInfo &info, f32 size);
 
 private:
     /// Creates the layout of the pipeline
@@ -69,11 +59,15 @@ private:
     /// Creates the pipeline
     void create_pipeline(VkRenderPass render_pass);
 
+    /// Creates the grid
+    void create_grid();
+
     Device &device;
     std::unique_ptr<Pipeline> pipeline;
     VkPipelineLayout pipeline_layout;
+    std::unique_ptr<Mesh> grid;
 };
 
 }// namespace rt
 
-#endif// REALTIME_RENDER_SYSTEM_H
+#endif// REALTIME_GRID_SYSTEM_H

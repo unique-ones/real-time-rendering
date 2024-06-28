@@ -10,8 +10,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -21,32 +21,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <array>
-
-/// Force angles to be specified in radians
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-
+#include "grid_system.h"
 #include "render_system.h"
-#include "utility.h"
 
 namespace rt {
 
-/// Creates a realtime render system
-RenderSystem::RenderSystem(Device &device, VkRenderPass render_pass) : device{ device }, pipeline_layout{} {
+/// Creates a realtime grid system
+GridSystem::GridSystem(Device &device, VkRenderPass render_pass) : device{ device }, pipeline_layout{ } {
     create_pipeline_layout();
     create_pipeline(render_pass);
+    create_grid();
 }
 
-/// Destroys all render system objects
-RenderSystem::~RenderSystem() {
+/// Destroys all grid system objects
+GridSystem::~GridSystem() {
     vkDestroyPipelineLayout(device.logical_device, pipeline_layout, nullptr);
 }
 
+/// Renders the grid
+void GridSystem::render([[maybe_unused]] const FrameInfo &info, [[maybe_unused]] f32 size) {
+}
+
 /// Creates the layout of the pipeline
-void RenderSystem::create_pipeline_layout() {
+void GridSystem::create_pipeline_layout() {
     VkPushConstantRange range{};
     range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     range.offset = 0;
@@ -60,33 +57,25 @@ void RenderSystem::create_pipeline_layout() {
     layout_info.pPushConstantRanges = &range;
 
     if (vkCreatePipelineLayout(device.logical_device, &layout_info, nullptr, &pipeline_layout) != VK_SUCCESS) {
-        error(64, "[render system] Unable to create pipeline layout!");
+        error(64, "[grid system] Unable to create pipeline layout!");
     }
 }
 
 /// Creates the pipeline
-void RenderSystem::create_pipeline(VkRenderPass render_pass) {
-    assert(pipeline_layout and "[render system] Cannot create pipeline before pipeline layout!");
+void GridSystem::create_pipeline(VkRenderPass render_pass) {
+    assert(pipeline_layout and "[grid system] Cannot create pipeline before pipeline layout!");
 
     PipelineDescription desc{};
     PipelineDescription::default_description(desc);
     desc.render_pass = render_pass;
     desc.pipeline_layout = pipeline_layout;
-    pipeline = std::make_unique<Pipeline>(device, "shaders/simple.vert.spv", "shaders/simple.frag.spv", desc);
+    pipeline = std::make_unique<Pipeline>(device, "shaders/grid.vert.spv", "shaders/grid.frag.spv", desc);
 }
 
-/// Renders the entities
-void RenderSystem::render_entities(const FrameInfo &info, std::vector<Entity> &entities) const {
-    pipeline->bind(info.command_buffer);
-    for (auto projection_view = info.camera.projection_view(); auto &entity : entities) {
-        PushConstantData push{};
-        push.transform = projection_view * entity.transform.transform();
-        push.normal = entity.transform.normal();
-        vkCmdPushConstants(info.command_buffer, pipeline_layout,
-                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof push, &push);
-        entity.mesh->bind(info.command_buffer);
-        entity.mesh->draw(info.command_buffer);
-    }
+/// Creates the grid
+void GridSystem::create_grid() {
+    // Mesh::Builder builder{};
+    // grid = std::make_unique<Mesh>(device, builder);
 }
 
 }// namespace rt

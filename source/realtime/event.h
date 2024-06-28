@@ -21,41 +21,58 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef REALTIME_CAMERA_H
-#define REALTIME_CAMERA_H
+#ifndef REALTIME_EVENT_H
+#define REALTIME_EVENT_H
 
+#include <functional>
 #include "realtime.h"
-#include "window.h"
 
 namespace rt {
 
-struct Camera {
-    Window &window;
-    f32 azimuth;
-    f32 declination;
-    f32 distance;
-    glm::vec3 target;
-    glm::mat4 projection;
-    glm::mat4 view;
+// A list of all event types
+enum class EventType {
+    Scroll,
+    Cursor
+};
 
-    // Movement state
-    bool clicked{};
-    glm::vec2 cursor_start{};
-    glm::vec2 cursor_current{};
+// Represents an event
+struct Event {
+    /// Retrieves the type of the event
+    virtual EventType type() const = 0;
+};
 
-    /// Creates a new orbital camera
-    /// @param position The initial position of the camera
-    /// @param target The target of the camera
-    explicit Camera(Window &window, const glm::vec3 &target = { 0, 0, 0 });
+// Represents a scroll event
+struct ScrollEvent : public Event {
+    f64 x;
+    f64 y;
 
-    /// Updates the camera
-    /// @param aspect The aspect ratio
-    void update(f32 aspect);
+    /// Creates a new scroll event
+    /// @param x The scroll in the x direction
+    /// @param y The scroll in the y direction
+    ScrollEvent(f64 x, f64 y);
 
-    /// Calculates the projection view matrix
-    glm::mat4 projection_view() const;
+    /// Retrieves the type of the event
+    EventType type() const override;
+};
+
+struct CursorEvent : public Event {
+    f64 x;
+    f64 y;
+
+    /// Creates a new cursor event
+    /// @param x The movement in the x direction
+    /// @param y The movement in the y direction
+    CursorEvent(f64 x, f64 y);
+
+    /// Retrieves the type of the event
+    EventType type() const override;
+};
+
+struct EventListener {
+    EventType type;
+    std::function<void(const Event &)> handler;
 };
 
 }// namespace rt
 
-#endif// REALTIME_CAMERA_H
+#endif// REALTIME_EVENT_H

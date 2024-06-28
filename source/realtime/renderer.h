@@ -78,7 +78,8 @@ public:
 
     /// Begins a new swapchain render pass
     /// @param command_buffer The recording command buffer
-    void begin_swapchain_render_pass(VkCommandBuffer command_buffer) const;
+    void begin_swapchain_render_pass(VkCommandBuffer command_buffer,
+                                     const glm::vec4 &clear_color = { 0.01f, 0.01f, 0.01f, 1.0f }) const;
 
     /// Ends the previously started swapchain render pass
     /// @param command_buffer The recording command buffer

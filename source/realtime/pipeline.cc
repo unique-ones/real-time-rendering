@@ -23,7 +23,7 @@
 
 #include <array>
 
-#include "model.h"
+#include "mesh.h"
 #include "pipeline.h"
 #include "utility.h"
 
@@ -163,8 +163,8 @@ void Pipeline::create_pipeline(const std::filesystem::path &vertex,
     stages[1].pNext = nullptr;
     stages[1].pSpecializationInfo = nullptr;
 
-    auto binding_descriptions = Model::Vertex::binding_descriptions();
-    auto attribute_descriptions = Model::Vertex::attribute_descriptions();
+    auto binding_descriptions = Mesh::Vertex::binding_descriptions();
+    auto attribute_descriptions = Mesh::Vertex::attribute_descriptions();
 
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

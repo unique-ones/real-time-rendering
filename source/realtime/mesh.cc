@@ -32,12 +32,12 @@
 #include <array>
 #include <cstring>
 #include <unordered_map>
-#include "model.h"
+#include "mesh.h"
 #include "tinyobjloader.h"
 
 template<>
-struct std::hash<rt::Model::Vertex> {
-    usize operator()(rt::Model::Vertex const &vertex) const noexcept {
+struct std::hash<rt::Mesh::Vertex> {
+    usize operator()(rt::Mesh::Vertex const &vertex) const noexcept {
         usize seed = 0;
         rt::hash_combine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
         return seed;
@@ -47,12 +47,12 @@ struct std::hash<rt::Model::Vertex> {
 namespace rt {
 
 /// Retrieves the binding descriptions for a vertex
-std::vector<VkVertexInputBindingDescription> Model::Vertex::binding_descriptions() {
+std::vector<VkVertexInputBindingDescription> Mesh::Vertex::binding_descriptions() {
     return { { 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX } };
 }
 
 /// Retrieves the attribute descriptions for a vertex
-std::vector<VkVertexInputAttributeDescription> Model::Vertex::attribute_descriptions() {
+std::vector<VkVertexInputAttributeDescription> Mesh::Vertex::attribute_descriptions() {
     std::vector<VkVertexInputAttributeDescription> attributes;
     attributes.emplace_back(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position));
     attributes.emplace_back(1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color));
@@ -61,8 +61,8 @@ std::vector<VkVertexInputAttributeDescription> Model::Vertex::attribute_descript
     return attributes;
 }
 
-/// Loads a model from the specified filesystem path
-void Model::Builder::load_model(const fs::path &path) {
+/// Loads a wavefront mesh from the specified filesystem path
+void Mesh::Builder::from_wavefront(const fs::path &path) {
     tinyobj::attrib_t attrib{};
     std::vector<tinyobj::shape_t> shapes{};
     std::vector<tinyobj::material_t> materials{};
@@ -116,9 +116,10 @@ void Model::Builder::load_model(const fs::path &path) {
     }
 }
 
-/// Creates a new model
-Model::Model(Device &device, const Builder &builder)
-    : device{ device },
+/// Creates a new mesh
+Mesh::Mesh(Device &device, const Builder &builder)
+    : centroid{},
+      device{ device },
       vertex_buffer{},
       vertex_count{},
       has_index_buffer{ false },
@@ -126,20 +127,21 @@ Model::Model(Device &device, const Builder &builder)
       index_count{} {
     create_vertex_buffers(builder.vertices);
     create_index_buffers(builder.indices);
+    compute_centroid(builder.vertices);
 }
 
-/// Destroys the data of the current model
-Model::~Model() { }
+/// Destroys the data of the current mesh
+Mesh::~Mesh() = default;
 
-/// Creates a model from the specified filesystem path
-std::unique_ptr<Model> Model::create_from_file(Device &device, const fs::path &path) {
+/// Creates a mesh from the specified filesystem path
+std::unique_ptr<Mesh> Mesh::from_wavefront(Device &device, const fs::path &path) {
     Builder builder{};
-    builder.load_model(path);
-    return std::make_unique<Model>(device, builder);
+    builder.from_wavefront(path);
+    return std::make_unique<Mesh>(device, builder);
 }
 
-/// Binds the current model using the specified command buffer
-void Model::bind(VkCommandBuffer command_buffer) const {
+/// Binds the current mesh using the specified command buffer
+void Mesh::bind(VkCommandBuffer command_buffer) const {
     std::array<VkDeviceSize, 1> offsets = { 0 };
     vkCmdBindVertexBuffers(command_buffer, 0, 1, &vertex_buffer->buffer, offsets.data());
     if (has_index_buffer) {
@@ -147,8 +149,8 @@ void Model::bind(VkCommandBuffer command_buffer) const {
     }
 }
 
-/// Draws the model using the specified command buffer
-void Model::draw(VkCommandBuffer command_buffer) const {
+/// Draws the mesh using the specified command buffer
+void Mesh::draw(VkCommandBuffer command_buffer) const {
     if (has_index_buffer) {
         vkCmdDrawIndexed(command_buffer, index_count, 1, 0, 0, 0);
     } else {
@@ -156,9 +158,9 @@ void Model::draw(VkCommandBuffer command_buffer) const {
     }
 }
 
-void Model::create_vertex_buffers(const std::vector<Vertex> &vertices) {
+void Mesh::create_vertex_buffers(const std::vector<Vertex> &vertices) {
     vertex_count = static_cast<u32>(vertices.size());
-    assert(vertex_count >= 3 and "[model] Vertex count must be at least 3!");
+    assert(vertex_count >= 3 and "[mesh] Vertex count must be at least 3!");
 
     auto buffer_size = sizeof(Vertex) * vertex_count;
     auto vertex_size = sizeof(Vertex);
@@ -176,8 +178,8 @@ void Model::create_vertex_buffers(const std::vector<Vertex> &vertices) {
     device.copy_buffer(staging_buffer.buffer, vertex_buffer->buffer, buffer_size);
 }
 
-/// Creates the index buffers for the current model
-void Model::create_index_buffers(const std::vector<u32> &indices) {
+/// Creates the index buffers for the current mesh
+void Mesh::create_index_buffers(const std::vector<u32> &indices) {
     index_count = static_cast<u32>(indices.size());
     has_index_buffer = index_count > 0;
     if (not has_index_buffer) {
@@ -198,6 +200,15 @@ void Model::create_index_buffers(const std::vector<u32> &indices) {
                                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     device.copy_buffer(staging_buffer.buffer, index_buffer->buffer, buffer_size);
+}
+
+/// Computes the centroid of the current mesh
+void Mesh::compute_centroid(const std::vector<Vertex> &vertices) {
+    auto result = glm::vec3{ 0.0f };
+    for (const auto &vertex : vertices) {
+        result += vertex.position;
+    }
+    centroid = result / static_cast<f32>(vertices.size());
 }
 
 }// namespace rt

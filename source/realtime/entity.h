@@ -26,7 +26,7 @@
 
 #include <memory>
 
-#include "model.h"
+#include "mesh.h"
 
 namespace rt {
 
@@ -66,8 +66,8 @@ public:
     /// @return The identifier
     identifier_type identifier() const;
 
-    std::shared_ptr<Model> model;
-    glm::vec3 color;
+    std::shared_ptr<Mesh> mesh;
+    glm::vec3 color{};
     TransformComponent transform;
 
 private:
